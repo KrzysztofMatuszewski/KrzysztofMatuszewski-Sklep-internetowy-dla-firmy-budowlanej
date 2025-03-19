@@ -1,0 +1,510 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudowMax - Hurtownia Sprzętu Budowlanego</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header z nawigacją -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>BudowMax</h1>
+                <p>Hurtownia sprzętu i materiałów budowlanych</p>
+            </div>
+            <div class="header-right">
+                <div class="header-search">
+                    <form>
+                        <input type="text" placeholder="Czego szukasz?">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="header-icons">
+                    <a href="#" class="icon-link"><i class="fas fa-user"></i></a>
+                    <a href="#" class="icon-link"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Strona główna</a></li>
+                    <li><a href="#">Kategorie</a></li>
+                    <li><a href="#">Promocje</a></li>
+                    <li><a href="#">Bestsellery</a></li>
+                    <li><a href="#">O nas</a></li>
+                    <li><a href="#">Kontakt</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sekcja Hero z dużym obrazem -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Profesjonalne materiały budowlane</h2>
+            <p>Wszystko czego potrzebujesz w jednym miejscu</p>
+            <div class="cta-buttons">
+                <a href="#" class="btn btn-primary">Sprawdź promocje</a>
+                <a href="#" class="btn btn-secondary">Nasze kategorie</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Kategorie produktów -->
+    <section class="categories">
+        <div class="container">
+            <div class="section-header">
+                <h2>Kategorie produktów</h2>
+                <p>Szeroki wybór materiałów budowlanych</p>
+            </div>
+            <div class="categories-grid">
+                <div class="category-card">
+                    <div class="category-image image-placeholder"></div>
+                    <h3>Narzędzia</h3>
+                    <a href="#" class="category-link">Zobacz produkty</a>
+                </div>
+                <div class="category-card">
+                    <div class="category-image image-placeholder"></div>
+                    <h3>Materiały konstrukcyjne</h3>
+                    <a href="#" class="category-link">Zobacz produkty</a>
+                </div>
+                <div class="category-card">
+                    <div class="category-image image-placeholder"></div>
+                    <h3>Farby i lakiery</h3>
+                    <a href="#" class="category-link">Zobacz produkty</a>
+                </div>
+                <div class="category-card">
+                    <div class="category-image image-placeholder"></div>
+                    <h3>Elektronarzędzia</h3>
+                    <a href="#" class="category-link">Zobacz produkty</a>
+                </div>
+                <div class="category-card">
+                    <div class="category-image image-placeholder"></div>
+                    <h3>Instalacje</h3>
+                    <a href="#" class="category-link">Zobacz produkty</a>
+                </div>
+                <div class="category-card">
+                    <div class="category-image image-placeholder"></div>
+                    <h3>Oświetlenie</h3>
+                    <a href="#" class="category-link">Zobacz produkty</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sekcja Promocje -->
+    <section class="promotions">
+        <div class="container">
+            <div class="section-header">
+                <h2>Promocje</h2>
+                <p>Skorzystaj z naszych aktualnych ofert</p>
+            </div>
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-badge">-20%</div>
+                    <div class="product-image image-placeholder"></div>
+                    <div class="product-info">
+                        <h3>Wiertarka udarowa BOSCH</h3>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <span>(24)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="old-price">599 zł</span>
+                            <span class="current-price">479 zł</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="add-to-cart">Do koszyka</button>
+                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-badge">-15%</div>
+                    <div class="product-image image-placeholder"></div>
+                    <div class="product-info">
+                        <h3>Szlifierka kątowa MAKITA</h3>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span>(36)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="old-price">449 zł</span>
+                            <span class="current-price">382 zł</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="add-to-cart">Do koszyka</button>
+                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-badge">-30%</div>
+                    <div class="product-image image-placeholder"></div>
+                    <div class="product-info">
+                        <h3>Zestaw kluczy STANLEY</h3>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <span>(52)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="old-price">320 zł</span>
+                            <span class="current-price">224 zł</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="add-to-cart">Do koszyka</button>
+                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-badge">-10%</div>
+                    <div class="product-image image-placeholder"></div>
+                    <div class="product-info">
+                        <h3>Farba lateksowa DULUX 10L</h3>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <span>(18)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="old-price">210 zł</span>
+                            <span class="current-price">189 zł</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="add-to-cart">Do koszyka</button>
+                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="promotions-cta">
+                <a href="#" class="btn btn-primary">Zobacz wszystkie promocje</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bestsellery -->
+    <section class="bestsellers">
+        <div class="container">
+            <div class="section-header">
+                <h2>Bestsellery</h2>
+                <p>Najchętniej wybierane produkty</p>
+            </div>
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-badge bestseller">Bestseller</div>
+                    <div class="product-image image-placeholder"></div>
+                    <div class="product-info">
+                        <h3>Młot udarowy DEWALT</h3>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <span>(67)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">799 zł</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="add-to-cart">Do koszyka</button>
+                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-badge bestseller">Bestseller</div>
+                    <div class="product-image image-placeholder"></div>
+                    <div class="product-info">
+                        <h3>Cement portlandzki 25kg</h3>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span>(128)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">32 zł</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="add-to-cart">Do koszyka</button>
+                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-badge bestseller">Bestseller</div>
+                    <div class="product-image image-placeholder"></div>
+                    <div class="product-info">
+                        <h3>Poziomnica laserowa BOSCH</h3>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <span>(45)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">489 zł</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="add-to-cart">Do koszyka</button>
+                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-badge bestseller">Bestseller</div>
+                    <div class="product-image image-placeholder"></div>
+                    <div class="product-info">
+                        <h3>Płyty gipsowo-kartonowe 12x1200x2600mm</h3>
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <span>(89)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">29 zł</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="add-to-cart">Do koszyka</button>
+                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sekcja Korzyści -->
+    <section class="benefits">
+        <div class="container">
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h3>Szybka dostawa</h3>
+                    <p>Dostawa w 24h na terenie całej Polski</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <h3>14 dni na zwrot</h3>
+                    <p>Bez pytań i dodatkowych formalności</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Gwarancja jakości</h3>
+                    <p>Wszystkie produkty są oryginalne i objęte gwarancją</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Pomoc techniczna</h3>
+                    <p>Nasi eksperci są dostępni 7 dni w tygodniu</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sekcja Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-content">
+                <h2>Zapisz się do newslettera i zyskaj 10% rabatu na pierwsze zakupy</h2>
+                <p>Dowiaduj się pierwszy o promocjach i nowościach</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Twój adres e-mail" required>
+                    <button type="submit" class="btn btn-primary">Zapisz się</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sekcja Opinie klientów -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <h2>Opinie klientów</h2>
+                <p>Co mówią o nas nasi klienci</p>
+            </div>
+            <div class="testimonials-slider">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Korzystam z hurtowni BudowMax od lat. Zawsze wszystko na czas, a obsługa klienta na najwyższym poziomie."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar image-placeholder"></div>
+                        <div class="author-info">
+                            <h4>Jan Kowalski</h4>
+                            <p>Właściciel firmy budowlanej</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Ogromny wybór produktów i konkurencyjne ceny. Na pewno będę wracać. Polecam każdemu wykonawcy."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar image-placeholder"></div>
+                        <div class="author-info">
+                            <h4>Anna Nowak</h4>
+                            <p>Architekt wnętrz</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sekcja Kontakt -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2>Kontakt</h2>
+                <p>Jesteśmy do Twojej dyspozycji</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3>Adres</h3>
+                        <p>ul. Budowlana 15</p>
+                        <p>00-001 Warszawa</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <h3>Telefon</h3>
+                        <p>+48 123 456 789</p>
+                        <p>+48 987 654 321</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>Email</h3>
+                        <p>sklep@budowmax.pl</p>
+                        <p>kontakt@budowmax.pl</p>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <input type="text" placeholder="Imię i nazwisko" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" placeholder="Telefon">
+                        </div>
+                        <div class="form-group">
+                            <textarea placeholder="Wiadomość" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Wyślij wiadomość</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stopka -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h3>BudowMax</h3>
+                    <p>Hurtownia sprzętu i materiałów budowlanych</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Przydatne linki</h4>
+                    <ul>
+                        <li><a href="#">Strona główna</a></li>
+                        <li><a href="#">Kategorie</a></li>
+                        <li><a href="#">Promocje</a></li>
+                        <li><a href="#">Bestsellery</a></li>
+                        <li><a href="#">O nas</a></li>
+                        <li><a href="#">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Informacje</h4>
+                    <ul>
+                        <li><a href="#">Regulamin</a></li>
+                        <li><a href="#">Polityka prywatności</a></li>
+                        <li><a href="#">Dostawa i płatności</a></li>
+                        <li><a href="#">Reklamacje i zwroty</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Obserwuj nas</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="payment-methods">
+                        <h4>Metody płatności</h4>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BudowMax - Wszelkie prawa zastrzeżone.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!-- templates/category.html -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ category.name }} - BudowMax</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header z nawigacją -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>BudowMax</h1>
+                <p>Hurtownia sprzętu i materiałów budowlanych</p>
+            </div>
+            <div class="header-right">
+                <div class="header-search">
+                    <form>
+                        <input type="text" placeholder="Czego szukasz?">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="header-icons">
+                    <a href="#" class="icon-link"><i class="fas fa-user"></i></a>
+                    <a href="#" class="icon-link"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                    <li><a href="#" class="active">Kategorie</a></li>
+                    <li><a href="#">Promocje</a></li>
+                    <li><a href="#">Bestsellery</a></li>
+                    <li><a href="#">O nas</a></li>
+                    <li><a href="#">Kontakt</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ścieżka -->
+    <section class="breadcrumb">
+        <div class="container">
+            <ul>
+                <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
+                <li>{{ category.name }}</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Kategoria -->
+    <section class="category-page">
+        <div class="container">
+            <div class="category-header">
+                <h1>{{ category.name }}</h1>
+                <p>{{ category.description }}</p>
+            </div>
+
+            <div class="category-filters">
+                <div class="filter-group">
+                    <label for="sort">Sortuj według:</label>
+                    <select id="sort" name="sort">
+                        <option value="popular">Popularność</option>
+                        <option value="newest">Od najnowszych</option>
+                        <option value="price_asc">Cena: od najniższej</option>
+                        <option value="price_desc">Cena: od najwyższej</option>
+                        <option value="name_asc">Nazwa: A-Z</option>
+                        <option value="name_desc">Nazwa: Z-A</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="per_page">Pokaż:</label>
+                    <select id="per_page" name="per_page">
+                        <option value="12">12</option>
+                        <option value="24">24</option>
+                        <option value="36">36</option>
+                        <option value="48">48</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="category-content">
+                <div class="sidebar">
+                    <div class="sidebar-box">
+                        <h3>Filtry</h3>
+                        <div class="sidebar-filter">
+                            <h4>Cena</h4>
+                            <div class="price-filter">
+                                <input type="number" placeholder="od" id="price_min">
+                                <span>-</span>
+                                <input type="number" placeholder="do" id="price_max">
+                                <button class="filter-button">OK</button>
+                            </div>
+                        </div>
+                        <div class="sidebar-filter">
+                            <h4>Marka</h4>
+                            <div class="checkbox-filter">
+                                {% for brand in brands %}
+                                <div class="filter-item">
+                                    <input type="checkbox" id="brand_{{ brand.id }}" name="brand" value="{{ brand.id }}">
+                                    <label for="brand_{{ brand.id }}">{{ brand.name }} ({{ brand.count }})</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="sidebar-filter">
+                            <h4>Dostępność</h4>
+                            <div class="checkbox-filter">
+                                <div class="filter-item">
+                                    <input type="checkbox" id="availability_1" name="availability" value="in_stock">
+                                    <label for="availability_1">Dostępny od ręki</label>
+                                </div>
+                                <div class="filter-item">
+                                    <input type="checkbox" id="availability_2" name="availability" value="on_order">
+                                    <label for="availability_2">Dostępny na zamówienie</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sidebar-filter">
+                            <h4>Oceny</h4>
+                            <div class="stars-filter">
+                                <div class="filter-item">
+                                    <input type="checkbox" id="rating_5" name="rating" value="5">
+                                    <label for="rating_5">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                    </label>
+                                </div>
+                                <div class="filter-item">
+                                    <input type="checkbox" id="rating_4" name="rating" value="4">
+                                    <label for="rating_4">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                        i więcej
+                                    </label>
+                                </div>
+                                <div class="filter-item">
+                                    <input type="checkbox" id="rating_3" name="rating" value="3">
+                                    <label for="rating_3">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
+                                        i więcej
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary filter-apply-btn">Zastosuj filtry</button>
+                        <button class="filter-clear-btn">Wyczyść filtry</button>
+                    </div>
+                </div>
+
+                <div class="products-container">
+                    <div class="products-grid">
+                        {% for product in products %}
+                        <div class="product-card">
+                            {% if product.discount %}
+                            <div class="product-badge">-{{ product.discount }}%</div>
+                            {% endif %}
+                            {% if product.is_new %}
+                            <div class="product-badge new">Nowość</div>
+                            {% endif %}
+                            {% if product.is_bestseller %}
+                            <div class="product-badge bestseller">Bestseller</div>
+                            {% endif %}
+                            <a href="{{ url_for('product', product_id=product.id) }}" class="product-image">
+                                <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                            </a>
+                            <div class="product-info">
+                                <a href="{{ url_for('product', product_id=product.id) }}">
+                                    <h3>{{ product.name }}</h3>
+                                </a>
+                                <div class="product-rating">
+                                    {% for i in range(5) %}
+                                        {% if i < product.rating|int %}
+                                            <i class="fas fa-star"></i>
+                                        {% elif i < product.rating and i == product.rating|int %}
+                                            <i class="fas fa-star-half-alt"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span>({{ product.reviews_count }})</span>
+                                </div>
+                                <div class="product-price">
+                                    {% if product.old_price %}
+                                    <span class="old-price">{{ product.old_price }} zł</span>
+                                    {% endif %}
+                                    <span class="current-price">{{ product.price }} zł</span>
+                                </div>
+                                <div class="product-actions">
+                                    <button class="add-to-cart" data-product-id="{{ product.id }}">Do koszyka</button>
+                                    <button class="add-to-wishlist" data-product-id="{{ product.id }}"><i class="far fa-heart"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Paginacja -->
+                    <div class="pagination">
+                        {% if pagination.has_prev %}
+                        <a href="{{ url_for('category', category_id=category.id, page=pagination.prev_page) }}" class="pagination-prev"><i class="fas fa-angle-left"></i></a>
+                        {% endif %}
+                        
+                        {% for page in pagination.iter_pages() %}
+                            {% if page %}
+                                {% if page == pagination.page %}
+                                <span class="current-page">{{ page }}</span>
+                                {% else %}
+                                <a href="{{ url_for('category', category_id=category.id, page=page) }}">{{ page }}</a>
+                                {% endif %}
+                            {% else %}
+                                <span class="pagination-ellipsis">...</span>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if pagination.has_next %}
+                        <a href="{{ url_for('category', category_id=category.id, page=pagination.next_page) }}" class="pagination-next"><i class="fas fa-angle-right"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stopka -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h3>BudowMax</h3>
+                    <p>Hurtownia sprzętu i materiałów budowlanych</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Przydatne linki</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                        <li><a href="#">Kategorie</a></li>
+                        <li><a href="#">Promocje</a></li>
+                        <li><a href="#">Bestsellery</a></li>
+                        <li><a href="#">O nas</a></li>
+                        <li><a href="#">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Informacje</h4>
+                    <ul>
+                        <li><a href="#">Regulamin</a></li>
+                        <li><a href="#">Polityka prywatności</a></li>
+                        <li><a href="#">Dostawa i płatności</a></li>
+                        <li><a href="#">Reklamacje i zwroty</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Obserwuj nas</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="payment-methods">
+                        <h4>Metody płatności</h4>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BudowMax - Wszelkie prawa zastrzeżone.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

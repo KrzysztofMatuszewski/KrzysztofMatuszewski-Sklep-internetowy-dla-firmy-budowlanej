@@ -1,0 +1,433 @@
+<!-- templates/product.html -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - BudowMax</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header z nawigacją -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>BudowMax</h1>
+                <p>Hurtownia sprzętu i materiałów budowlanych</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stopka -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h3>BudowMax</h3>
+                    <p>Hurtownia sprzętu i materiałów budowlanych</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Przydatne linki</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                        <li><a href="#">Kategorie</a></li>
+                        <li><a href="#">Promocje</a></li>
+                        <li><a href="#">Bestsellery</a></li>
+                        <li><a href="#">O nas</a></li>
+                        <li><a href="#">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Informacje</h4>
+                    <ul>
+                        <li><a href="#">Regulamin</a></li>
+                        <li><a href="#">Polityka prywatności</a></li>
+                        <li><a href="#">Dostawa i płatności</a></li>
+                        <li><a href="#">Reklamacje i zwroty</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Obserwuj nas</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="payment-methods">
+                        <h4>Metody płatności</h4>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BudowMax - Wszelkie prawa zastrzeżone.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+            <div class="header-right">
+                <div class="header-search">
+                    <form>
+                        <input type="text" placeholder="Czego szukasz?">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="header-icons">
+                    <a href="#" class="icon-link"><i class="fas fa-user"></i></a>
+                    <a href="#" class="icon-link"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                    <li><a href="#">Kategorie</a></li>
+                    <li><a href="#">Promocje</a></li>
+                    <li><a href="#">Bestsellery</a></li>
+                    <li><a href="#">O nas</a></li>
+                    <li><a href="#">Kontakt</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ścieżka -->
+    <section class="breadcrumb">
+        <div class="container">
+            <ul>
+                <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
+                <li><a href="{{ url_for('category', category_id=product.category.id) }}">{{ product.category.name }}</a></li>
+                <li>{{ product.name }}</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Produkt -->
+    <section class="product-page">
+        <div class="container">
+            <div class="product-main">
+                <div class="product-gallery">
+                    <div class="product-main-image">
+                        <img src="{{ product.images[0] }}" alt="{{ product.name }}" id="main-product-image">
+                        {% if product.discount %}
+                        <div class="product-badge">-{{ product.discount }}%</div>
+                        {% endif %}
+                        {% if product.is_new %}
+                        <div class="product-badge new">Nowość</div>
+                        {% endif %}
+                        {% if product.is_bestseller %}
+                        <div class="product-badge bestseller">Bestseller</div>
+                        {% endif %}
+                    </div>
+                    <div class="product-thumbnails">
+                        {% for image in product.images %}
+                        <div class="product-thumbnail {% if loop.index0 == 0 %}active{% endif %}" data-image="{{ image }}">
+                            <img src="{{ image }}" alt="{{ product.name }} - zdjęcie {{ loop.index }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h1 class="product-title">{{ product.name }}</h1>
+                    <div class="product-meta">
+                        <div class="product-rating">
+                            {% for i in range(5) %}
+                                {% if i < product.rating|int %}
+                                    <i class="fas fa-star"></i>
+                                {% elif i < product.rating and i == product.rating|int %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span>{{ product.rating }}/5 ({{ product.reviews_count }} ocen)</span>
+                        </div>
+                        <div class="product-code">Kod produktu: {{ product.code }}</div>
+                        <div class="product-brand">Producent: <a href="{{ url_for('brand', brand_id=product.brand.id) }}">{{ product.brand.name }}</a></div>
+                    </div>
+                    <div class="product-price-box">
+                        {% if product.old_price %}
+                        <div class="old-price">{{ product.old_price }} zł</div>
+                        {% endif %}
+                        <div class="current-price">{{ product.price }} zł</div>
+                        <div class="price-info">
+                            <span>Cena brutto</span>
+                            {% if product.old_price %}
+                            <span class="product-discount">Oszczędzasz: {{ product.old_price - product.price }} zł</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="product-availability" data-availability="{{ product.availability }}">
+                        {% if product.availability == 'in_stock' %}
+                        <i class="fas fa-check-circle"></i> Dostępny od ręki
+                        {% elif product.availability == 'low_stock' %}
+                        <i class="fas fa-exclamation-circle"></i> Ostatnie sztuki
+                        {% elif product.availability == 'on_order' %}
+                        <i class="fas fa-clock"></i> Dostępny na zamówienie ({{ product.delivery_time }} dni)
+                        {% else %}
+                        <i class="fas fa-times-circle"></i> Niedostępny
+                        {% endif %}
+                    </div>
+                    <div class="product-delivery">
+                        <div class="delivery-option">
+                            <i class="fas fa-truck"></i>
+                            <div class="delivery-info">
+                                <span>Dostawa kurierem</span>
+                                <span class="delivery-cost">od {{ product.delivery_cost }} zł</span>
+                            </div>
+                        </div>
+                        <div class="delivery-option">
+                            <i class="fas fa-store"></i>
+                            <div class="delivery-info">
+                                <span>Odbiór osobisty</span>
+                                <span class="delivery-cost">0 zł</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-actions">
+                        <div class="quantity-box">
+                            <button class="quantity-btn decrease">-</button>
+                            <input type="number" value="1" min="1" max="{{ product.stock }}" id="product-quantity">
+                            <button class="quantity-btn increase">+</button>
+                        </div>
+                        <button class="btn btn-primary add-to-cart" data-product-id="{{ product.id }}">
+                            <i class="fas fa-shopping-cart"></i> Dodaj do koszyka
+                        </button>
+                        <button class="btn-wishlist" data-product-id="{{ product.id }}">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="product-description-short">
+                        <h3>Krótki opis:</h3>
+                        <p>{{ product.short_description }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-tabs">
+                <div class="tabs-nav">
+                    <button class="tab-btn active" data-tab="description">Opis</button>
+                    <button class="tab-btn" data-tab="specifications">Specyfikacja</button>
+                    <button class="tab-btn" data-tab="reviews">Opinie ({{ product.reviews_count }})</button>
+                </div>
+                <div class="tabs-content">
+                    <div class="tab-pane active" id="description">
+                        <div class="product-description">
+                            {{ product.description|safe }}
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="specifications">
+                        <table class="product-specifications">
+                            {% for group in product.specifications %}
+                            <tr class="specification-group">
+                                <th colspan="2">{{ group.name }}</th>
+                            </tr>
+                            {% for spec in group.specs %}
+                            <tr>
+                                <td>{{ spec.name }}</td>
+                                <td>{{ spec.value }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="tab-pane" id="reviews">
+                        <div class="product-reviews">
+                            <div class="reviews-summary">
+                                <div class="reviews-average">
+                                    <div class="average-rating">{{ product.rating }}</div>
+                                    <div class="average-stars">
+                                        {% for i in range(5) %}
+                                            {% if i < product.rating|int %}
+                                                <i class="fas fa-star"></i>
+                                            {% elif i < product.rating and i == product.rating|int %}
+                                                <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="reviews-count">{{ product.reviews_count }} ocen</div>
+                                </div>
+                                <div class="reviews-bars">
+                                    {% for i in range(5, 0, -1) %}
+                                    <div class="rating-bar">
+                                        <div class="rating-label">{{ i }} <i class="fas fa-star"></i></div>
+                                        <div class="rating-progress">
+                                            <div class="rating-progress-bar" style="width: {{ product.rating_distribution[i] }}%"></div>
+                                        </div>
+                                        <div class="rating-count">{{ product.ratings_count[i] }}</div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="reviews-add">
+                                {% if current_user.is_authenticated and current_user.can_review %}
+                                <button class="btn btn-primary" id="write-review-btn">Napisz opinię</button>
+                                {% else %}
+                                <div class="review-login-info">
+                                    <p>Tylko zalogowani klienci, którzy zakupili ten produkt mogą dodać opinię.</p>
+                                    <a href="{{ url_for('login') }}" class="btn btn-primary">Zaloguj się</a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="reviews-list">
+                                {% if product.reviews %}
+                                    {% for review in product.reviews %}
+                                    <div class="review-item">
+                                        <div class="review-header">
+                                            <div class="review-author">{{ review.author }}</div>
+                                            <div class="review-date">{{ review.date.strftime('%d.%m.%Y') }}</div>
+                                        </div>
+                                        <div class="review-rating">
+                                            {% for i in range(5) %}
+                                                {% if i < review.rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <div class="review-content">
+                                            <h4>{{ review.title }}</h4>
+                                            <p>{{ review.content }}</p>
+                                        </div>
+                                        {% if review.pros or review.cons %}
+                                        <div class="review-pros-cons">
+                                            {% if review.pros %}
+                                            <div class="review-pros">
+                                                <h5>Zalety</h5>
+                                                <ul>
+                                                    {% for pro in review.pros %}
+                                                    <li>{{ pro }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            {% endif %}
+                                            {% if review.cons %}
+                                            <div class="review-cons">
+                                                <h5>Wady</h5>
+                                                <ul>
+                                                    {% for con in review.cons %}
+                                                    <li>{{ con }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                        <div class="review-helpful">
+                                            <span>Czy ta opinia była pomocna?</span>
+                                            <button class="helpful-btn" data-review-id="{{ review.id }}" data-helpful="yes">
+                                                <i class="fas fa-thumbs-up"></i> Tak <span>({{ review.helpful_yes }})</span>
+                                            </button>
+                                            <button class="helpful-btn" data-review-id="{{ review.id }}" data-helpful="no">
+                                                <i class="fas fa-thumbs-down"></i> Nie <span>({{ review.helpful_no }})</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    <!-- Paginacja opinii -->
+                                    {% if reviews_pagination.pages > 1 %}
+                                    <div class="pagination">
+                                        {% if reviews_pagination.has_prev %}
+                                        <a href="{{ url_for('product', product_id=product.id, reviews_page=reviews_pagination.prev_page) }}#reviews" class="pagination-prev"><i class="fas fa-angle-left"></i></a>
+                                        {% endif %}
+                                        
+                                        {% for page in reviews_pagination.iter_pages() %}
+                                            {% if page %}
+                                                {% if page == reviews_pagination.page %}
+                                                <span class="current-page">{{ page }}</span>
+                                                {% else %}
+                                                <a href="{{ url_for('product', product_id=product.id, reviews_page=page) }}#reviews">{{ page }}</a>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="pagination-ellipsis">...</span>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {% if reviews_pagination.has_next %}
+                                        <a href="{{ url_for('product', product_id=product.id, reviews_page=reviews_pagination.next_page) }}#reviews" class="pagination-next"><i class="fas fa-angle-right"></i></a>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                {% else %}
+                                <div class="no-reviews">
+                                    <p>Ten produkt nie ma jeszcze opinii. Bądź pierwszy i dodaj swoją opinię!</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Powiązane produkty -->
+            <div class="related-products">
+                <h3>Powiązane produkty</h3>
+                <div class="products-grid">
+                    {% for product in related_products %}
+                    <div class="product-card">
+                        {% if product.discount %}
+                        <div class="product-badge">-{{ product.discount }}%</div>
+                        {% endif %}
+                        {% if product.is_new %}
+                        <div class="product-badge new">Nowość</div>
+                        {% endif %}
+                        {% if product.is_bestseller %}
+                        <div class="product-badge bestseller">Bestseller</div>
+                        {% endif %}
+                        <a href="{{ url_for('product', product_id=product.id) }}" class="product-image">
+                            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                        </a>
+                        <div class="product-info">
+                            <a href="{{ url_for('product', product_id=product.id) }}">
+                                <h3>{{ product.name }}</h3>
+                            </a>
+                            <div class="product-rating">
+                                {% for i in range(5) %}
+                                    {% if i < product.rating|int %}
+                                        <i class="fas fa-star"></i>
+                                    {% elif i < product.rating and i == product.rating|int %}
+                                        <i class="fas fa-star-half-alt"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span>({{ product.reviews_count }})</span>
+                            </div>
+                            <div class="product-price">
+                                {% if product.old_price %}
+                                <span class="old-price">{{ product.old_price }} zł</span>
+                                {% endif %}
+                                <span class="current-price">{{ product.price }} zł</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="add-to-cart" data-product-id="{{ product.id }}">Do koszyka</button>
+                                <button class="add-to-wishlist" data-product-id="{{ product.id }}"><i class="far fa-heart"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>

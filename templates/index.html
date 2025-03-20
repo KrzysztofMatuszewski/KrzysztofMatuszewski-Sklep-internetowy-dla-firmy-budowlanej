@@ -34,8 +34,8 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href="#" class="active">Strona główna</a></li>
-                    <li><a href="#">Kategorie</a></li>
+                    <li><a href="{{ url_for('index') }}" class="active">Strona główna</a></li>
+                    <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
                     <li><a href="#">Promocje</a></li>
                     <li><a href="#">Bestsellery</a></li>
                     <li><a href="#">O nas</a></li>
@@ -55,7 +55,7 @@
             <p>Wszystko czego potrzebujesz w jednym miejscu</p>
             <div class="cta-buttons">
                 <a href="#" class="btn btn-primary">Sprawdź promocje</a>
-                <a href="#" class="btn btn-secondary">Nasze kategorie</a>
+                <a href="{{ url_for('categories') }}" class="btn btn-secondary">Nasze kategorie</a>
             </div>
         </div>
     </section>
@@ -68,36 +68,13 @@
                 <p>Szeroki wybór materiałów budowlanych</p>
             </div>
             <div class="categories-grid">
+                {% for category in categories %}
                 <div class="category-card">
                     <div class="category-image image-placeholder"></div>
-                    <h3>Narzędzia</h3>
-                    <a href="#" class="category-link">Zobacz produkty</a>
+                    <h3>{{ category.name }}</h3>
+                    <a href="{{ url_for('category', category_id=category.id) }}" class="category-link">Zobacz produkty</a>
                 </div>
-                <div class="category-card">
-                    <div class="category-image image-placeholder"></div>
-                    <h3>Materiały konstrukcyjne</h3>
-                    <a href="#" class="category-link">Zobacz produkty</a>
-                </div>
-                <div class="category-card">
-                    <div class="category-image image-placeholder"></div>
-                    <h3>Farby i lakiery</h3>
-                    <a href="#" class="category-link">Zobacz produkty</a>
-                </div>
-                <div class="category-card">
-                    <div class="category-image image-placeholder"></div>
-                    <h3>Elektronarzędzia</h3>
-                    <a href="#" class="category-link">Zobacz produkty</a>
-                </div>
-                <div class="category-card">
-                    <div class="category-image image-placeholder"></div>
-                    <h3>Instalacje</h3>
-                    <a href="#" class="category-link">Zobacz produkty</a>
-                </div>
-                <div class="category-card">
-                    <div class="category-image image-placeholder"></div>
-                    <h3>Oświetlenie</h3>
-                    <a href="#" class="category-link">Zobacz produkty</a>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </section>
@@ -110,98 +87,35 @@
                 <p>Skorzystaj z naszych aktualnych ofert</p>
             </div>
             <div class="products-grid">
+                {% for product in products if product.discount %}
                 <div class="product-card">
-                    <div class="product-badge">-20%</div>
+                    <div class="product-badge">-{{ product.discount }}%</div>
                     <div class="product-image image-placeholder"></div>
                     <div class="product-info">
-                        <h3>Wiertarka udarowa BOSCH</h3>
+                        <h3>{{ product.name }}</h3>
                         <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="far fa-star"></i>
-                            <span>(24)</span>
+                            {% for i in range(5) %}
+                                {% if i < product.rating|int %}
+                                    <i class="fas fa-star"></i>
+                                {% elif i < product.rating and i == product.rating|int %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span>({{ product.reviews_count }})</span>
                         </div>
                         <div class="product-price">
-                            <span class="old-price">599 zł</span>
-                            <span class="current-price">479 zł</span>
+                            <span class="old-price">{{ product.old_price }} zł</span>
+                            <span class="current-price">{{ product.price }} zł</span>
                         </div>
                         <div class="product-actions">
-                            <button class="add-to-cart">Do koszyka</button>
-                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                            <button class="add-to-cart" data-product-id="{{ product.id }}">Do koszyka</button>
+                            <button class="add-to-wishlist" data-product-id="{{ product.id }}"><i class="far fa-heart"></i></button>
                         </div>
                     </div>
                 </div>
-                <div class="product-card">
-                    <div class="product-badge">-15%</div>
-                    <div class="product-image image-placeholder"></div>
-                    <div class="product-info">
-                        <h3>Szlifierka kątowa MAKITA</h3>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                            <span>(36)</span>
-                        </div>
-                        <div class="product-price">
-                            <span class="old-price">449 zł</span>
-                            <span class="current-price">382 zł</span>
-                        </div>
-                        <div class="product-actions">
-                            <button class="add-to-cart">Do koszyka</button>
-                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-badge">-30%</div>
-                    <div class="product-image image-placeholder"></div>
-                    <div class="product-info">
-                        <h3>Zestaw kluczy STANLEY</h3>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <span>(52)</span>
-                        </div>
-                        <div class="product-price">
-                            <span class="old-price">320 zł</span>
-                            <span class="current-price">224 zł</span>
-                        </div>
-                        <div class="product-actions">
-                            <button class="add-to-cart">Do koszyka</button>
-                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-badge">-10%</div>
-                    <div class="product-image image-placeholder"></div>
-                    <div class="product-info">
-                        <h3>Farba lateksowa DULUX 10L</h3>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="far fa-star"></i>
-                            <span>(18)</span>
-                        </div>
-                        <div class="product-price">
-                            <span class="old-price">210 zł</span>
-                            <span class="current-price">189 zł</span>
-                        </div>
-                        <div class="product-actions">
-                            <button class="add-to-cart">Do koszyka</button>
-                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
-                        </div>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
             <div class="promotions-cta">
                 <a href="#" class="btn btn-primary">Zobacz wszystkie promocje</a>
@@ -217,94 +131,37 @@
                 <p>Najchętniej wybierane produkty</p>
             </div>
             <div class="products-grid">
+                {% for product in products if product.is_bestseller %}
                 <div class="product-card">
                     <div class="product-badge bestseller">Bestseller</div>
                     <div class="product-image image-placeholder"></div>
                     <div class="product-info">
-                        <h3>Młot udarowy DEWALT</h3>
+                        <h3>{{ product.name }}</h3>
                         <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <span>(67)</span>
+                            {% for i in range(5) %}
+                                {% if i < product.rating|int %}
+                                    <i class="fas fa-star"></i>
+                                {% elif i < product.rating and i == product.rating|int %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span>({{ product.reviews_count }})</span>
                         </div>
                         <div class="product-price">
-                            <span class="current-price">799 zł</span>
+                            {% if product.old_price %}
+                            <span class="old-price">{{ product.old_price }} zł</span>
+                            {% endif %}
+                            <span class="current-price">{{ product.price }} zł</span>
                         </div>
                         <div class="product-actions">
-                            <button class="add-to-cart">Do koszyka</button>
-                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
+                            <button class="add-to-cart" data-product-id="{{ product.id }}">Do koszyka</button>
+                            <button class="add-to-wishlist" data-product-id="{{ product.id }}"><i class="far fa-heart"></i></button>
                         </div>
                     </div>
                 </div>
-                <div class="product-card">
-                    <div class="product-badge bestseller">Bestseller</div>
-                    <div class="product-image image-placeholder"></div>
-                    <div class="product-info">
-                        <h3>Cement portlandzki 25kg</h3>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                            <span>(128)</span>
-                        </div>
-                        <div class="product-price">
-                            <span class="current-price">32 zł</span>
-                        </div>
-                        <div class="product-actions">
-                            <button class="add-to-cart">Do koszyka</button>
-                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-badge bestseller">Bestseller</div>
-                    <div class="product-image image-placeholder"></div>
-                    <div class="product-info">
-                        <h3>Poziomnica laserowa BOSCH</h3>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <span>(45)</span>
-                        </div>
-                        <div class="product-price">
-                            <span class="current-price">489 zł</span>
-                        </div>
-                        <div class="product-actions">
-                            <button class="add-to-cart">Do koszyka</button>
-                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-badge bestseller">Bestseller</div>
-                    <div class="product-image image-placeholder"></div>
-                    <div class="product-info">
-                        <h3>Płyty gipsowo-kartonowe 12x1200x2600mm</h3>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="far fa-star"></i>
-                            <span>(89)</span>
-                        </div>
-                        <div class="product-price">
-                            <span class="current-price">29 zł</span>
-                        </div>
-                        <div class="product-actions">
-                            <button class="add-to-cart">Do koszyka</button>
-                            <button class="add-to-wishlist"><i class="far fa-heart"></i></button>
-                        </div>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </section>
@@ -461,8 +318,8 @@
                 <div class="footer-links">
                     <h4>Przydatne linki</h4>
                     <ul>
-                        <li><a href="#">Strona główna</a></li>
-                        <li><a href="#">Kategorie</a></li>
+                        <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                        <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
                         <li><a href="#">Promocje</a></li>
                         <li><a href="#">Bestsellery</a></li>
                         <li><a href="#">O nas</a></li>

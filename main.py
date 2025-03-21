@@ -6,14 +6,22 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
+
+
+
+class Config:
+    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root:rootroot@localhost/patobud'
+    #'mysql+mysqlconnector://(nazwa_uzytkownika, najczesciej 'root'):(haslo do mysql)@localhost/patobud'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = 'your-secret-key-here'
 # Inicjalizacja aplikacji
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = 'twoj_tajny_klucz'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///budowmax.db'
 # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+app.config.from_object(Config)
 # # Inicjalizacja bazy danych
-# db = SQLAlchemy(app)
+db = SQLAlchemy(app)
 
 # # Inicjalizacja logowania
 # login_manager = LoginManager()

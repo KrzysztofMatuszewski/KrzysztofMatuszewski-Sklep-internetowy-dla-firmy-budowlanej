@@ -16,67 +16,6 @@
                 <h1>BudowMax</h1>
                 <p>Hurtownia sprzętu i materiałów budowlanych</p>
             </div>
-        </div>
-    </section>
-
-    <!-- Stopka -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <h3>BudowMax</h3>
-                    <p>Hurtownia sprzętu i materiałów budowlanych</p>
-                </div>
-                <div class="footer-links">
-                    <h4>Przydatne linki</h4>
-                    <ul>
-                        <li><a href="{{ url_for('index') }}">Strona główna</a></li>
-                        <li><a href="#">Kategorie</a></li>
-                        <li><a href="#">Promocje</a></li>
-                        <li><a href="#">Bestsellery</a></li>
-                        <li><a href="#">O nas</a></li>
-                        <li><a href="#">Kontakt</a></li>
-                    </ul>
-                </div>
-                <div class="footer-links">
-                    <h4>Informacje</h4>
-                    <ul>
-                        <li><a href="#">Regulamin</a></li>
-                        <li><a href="#">Polityka prywatności</a></li>
-                        <li><a href="#">Dostawa i płatności</a></li>
-                        <li><a href="#">Reklamacje i zwroty</a></li>
-                        <li><a href="#">FAQ</a></li>
-                    </ul>
-                </div>
-                <div class="footer-social">
-                    <h4>Obserwuj nas</h4>
-                    <div class="social-icons">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                    <div class="payment-methods">
-                        <h4>Metody płatności</h4>
-                        <div class="payment-icons">
-                            <i class="fab fa-cc-visa"></i>
-                            <i class="fab fa-cc-mastercard"></i>
-                            <i class="fab fa-cc-paypal"></i>
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 BudowMax - Wszelkie prawa zastrzeżone.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
-</html>
             <div class="header-right">
                 <div class="header-search">
                     <form>
@@ -85,9 +24,13 @@
                     </form>
                 </div>
                 <div class="header-icons">
-                    <a href="#" class="icon-link"><i class="fas fa-user"></i></a>
-                    <a href="#" class="icon-link"><i class="fas fa-heart"></i></a>
-                    <a href="#" class="cart-icon">
+                    {% if current_user.is_authenticated %}
+                        <a href="#" class="icon-link"><i class="fas fa-user"></i> {{ current_user.username }}</a>
+                        <a href="{{ url_for('logout') }}" class="icon-link"><i class="fas fa-sign-out-alt"></i></a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="icon-link"><i class="fas fa-user"></i></a>
+                    {% endif %}
+                    <a href="{{ url_for('cart') }}" class="cart-icon">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="cart-count">0</span>
                     </a>
@@ -96,9 +39,8 @@
             <nav>
                 <ul>
                     <li><a href="{{ url_for('index') }}">Strona główna</a></li>
-                    <li><a href="#">Kategorie</a></li>
+                    <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
                     <li><a href="#">Promocje</a></li>
-                    <li><a href="#">Bestsellery</a></li>
                     <li><a href="#">O nas</a></li>
                     <li><a href="#">Kontakt</a></li>
                 </ul>
@@ -162,7 +104,7 @@
                             <span>{{ product.rating }}/5 ({{ product.reviews_count }} ocen)</span>
                         </div>
                         <div class="product-code">Kod produktu: {{ product.code }}</div>
-                        <div class="product-brand">Producent: <a href="{{ url_for('brand', brand_id=product.brand.id) }}">{{ product.brand.name }}</a></div>
+                        <div class="product-category">Kategoria: <a href="{{ url_for('category', category_id=product.category.id) }}">{{ product.category.name }}</a></div>
                     </div>
                     <div class="product-price-box">
                         {% if product.old_price %}
@@ -172,15 +114,15 @@
                         <div class="price-info">
                             <span>Cena brutto</span>
                             {% if product.old_price %}
-                            <span class="product-discount">Oszczędzasz: {{ product.old_price - product.price }} zł</span>
+                            <span class="product-discount">Oszczędzasz: {{ (product.old_price - product.price)|round(2) }} zł</span>
                             {% endif %}
                         </div>
                     </div>
                     <div class="product-availability" data-availability="{{ product.availability }}">
                         {% if product.availability == 'in_stock' %}
-                        <i class="fas fa-check-circle"></i> Dostępny od ręki
+                        <i class="fas fa-check-circle"></i> Dostępny od ręki ({{ product.stock }} szt.)
                         {% elif product.availability == 'low_stock' %}
-                        <i class="fas fa-exclamation-circle"></i> Ostatnie sztuki
+                        <i class="fas fa-exclamation-circle"></i> Ostatnie sztuki ({{ product.stock }} szt.)
                         {% elif product.availability == 'on_order' %}
                         <i class="fas fa-clock"></i> Dostępny na zamówienie ({{ product.delivery_time }} dni)
                         {% else %}
@@ -192,7 +134,7 @@
                             <i class="fas fa-truck"></i>
                             <div class="delivery-info">
                                 <span>Dostawa kurierem</span>
-                                <span class="delivery-cost">od {{ product.delivery_cost }} zł</span>
+                                <span class="delivery-cost">{% if product.delivery_cost > 0 %}{{ product.delivery_cost }} zł{% else %}Darmowa dostawa{% endif %}</span>
                             </div>
                         </div>
                         <div class="delivery-option">
@@ -204,17 +146,16 @@
                         </div>
                     </div>
                     <div class="product-actions">
-                        <div class="quantity-box">
-                            <button class="quantity-btn decrease">-</button>
-                            <input type="number" value="1" min="1" max="{{ product.stock }}" id="product-quantity">
-                            <button class="quantity-btn increase">+</button>
-                        </div>
-                        <button class="btn btn-primary add-to-cart" data-product-id="{{ product.id }}">
-                            <i class="fas fa-shopping-cart"></i> Dodaj do koszyka
-                        </button>
-                        <button class="btn-wishlist" data-product-id="{{ product.id }}">
-                            <i class="far fa-heart"></i>
-                        </button>
+                        <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+                            <div class="quantity-box">
+                                <button type="button" class="quantity-btn decrease">-</button>
+                                <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" id="product-quantity">
+                                <button type="button" class="quantity-btn increase">+</button>
+                            </div>
+                            <button type="submit" class="btn btn-primary add-to-cart">
+                                <i class="fas fa-shopping-cart"></i> Dodaj do koszyka
+                            </button>
+                        </form>
                     </div>
                     <div class="product-description-short">
                         <h3>Krótki opis:</h3>
@@ -281,11 +222,11 @@
                                 </div>
                             </div>
                             <div class="reviews-add">
-                                {% if current_user.is_authenticated and current_user.can_review %}
+                                {% if current_user.is_authenticated %}
                                 <button class="btn btn-primary" id="write-review-btn">Napisz opinię</button>
                                 {% else %}
                                 <div class="review-login-info">
-                                    <p>Tylko zalogowani klienci, którzy zakupili ten produkt mogą dodać opinię.</p>
+                                    <p>Tylko zalogowani klienci mogą dodać opinię.</p>
                                     <a href="{{ url_for('login') }}" class="btn btn-primary">Zaloguj się</a>
                                 </div>
                                 {% endif %}
@@ -386,48 +327,109 @@
             <div class="related-products">
                 <h3>Powiązane produkty</h3>
                 <div class="products-grid">
-                    {% for product in related_products %}
+                    {% for related_product in related_products %}
                     <div class="product-card">
-                        {% if product.discount %}
-                        <div class="product-badge">-{{ product.discount }}%</div>
+                        {% if related_product.discount %}
+                        <div class="product-badge">-{{ related_product.discount }}%</div>
                         {% endif %}
-                        {% if product.is_new %}
+                        {% if related_product.is_new %}
                         <div class="product-badge new">Nowość</div>
                         {% endif %}
-                        {% if product.is_bestseller %}
+                        {% if related_product.is_bestseller %}
                         <div class="product-badge bestseller">Bestseller</div>
                         {% endif %}
-                        <a href="{{ url_for('product', product_id=product.id) }}" class="product-image">
-                            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                        <a href="{{ url_for('product', product_id=related_product.id) }}" class="product-image">
+                            <img src="{{ related_product.image_url }}" alt="{{ related_product.name }}">
                         </a>
                         <div class="product-info">
-                            <a href="{{ url_for('product', product_id=product.id) }}">
-                                <h3>{{ product.name }}</h3>
+                            <a href="{{ url_for('product', product_id=related_product.id) }}">
+                                <h3>{{ related_product.name }}</h3>
                             </a>
                             <div class="product-rating">
                                 {% for i in range(5) %}
-                                    {% if i < product.rating|int %}
+                                    {% if i < related_product.rating|int %}
                                         <i class="fas fa-star"></i>
-                                    {% elif i < product.rating and i == product.rating|int %}
+                                    {% elif i < related_product.rating and i == related_product.rating|int %}
                                         <i class="fas fa-star-half-alt"></i>
                                     {% else %}
                                         <i class="far fa-star"></i>
                                     {% endif %}
                                 {% endfor %}
-                                <span>({{ product.reviews_count }})</span>
+                                <span>({{ related_product.reviews_count }})</span>
                             </div>
                             <div class="product-price">
-                                {% if product.old_price %}
-                                <span class="old-price">{{ product.old_price }} zł</span>
+                                {% if related_product.old_price %}
+                                <span class="old-price">{{ related_product.old_price }} zł</span>
                                 {% endif %}
-                                <span class="current-price">{{ product.price }} zł</span>
+                                <span class="current-price">{{ related_product.price }} zł</span>
                             </div>
                             <div class="product-actions">
-                                <button class="add-to-cart" data-product-id="{{ product.id }}">Do koszyka</button>
-                                <button class="add-to-wishlist" data-product-id="{{ product.id }}"><i class="far fa-heart"></i></button>
+                                <form action="{{ url_for('add_to_cart', product_id=related_product.id) }}" method="POST">
+                                    <button type="submit" class="add-to-cart">Do koszyka</button>
+                                </form>
                             </div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Stopka -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h3>BudowMax</h3>
+                    <p>Hurtownia sprzętu i materiałów budowlanych</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Przydatne linki</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                        <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
+                        <li><a href="#">Promocje</a></li>
+                        <li><a href="#">O nas</a></li>
+                        <li><a href="#">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Informacje</h4>
+                    <ul>
+                        <li><a href="#">Regulamin</a></li>
+                        <li><a href="#">Polityka prywatności</a></li>
+                        <li><a href="#">Dostawa i płatności</a></li>
+                        <li><a href="#">Reklamacje i zwroty</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Obserwuj nas</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="payment-methods">
+                        <h4>Metody płatności</h4>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BudowMax - Wszelkie prawa zastrzeżone.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

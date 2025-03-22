@@ -24,9 +24,13 @@
                     </form>
                 </div>
                 <div class="header-icons">
-                    <a href="#" class="icon-link"><i class="fas fa-user"></i></a>
-                    <a href="#" class="icon-link"><i class="fas fa-heart"></i></a>
-                    <a href="#" class="cart-icon">
+                    {% if current_user.is_authenticated %}
+                        <a href="#" class="icon-link"><i class="fas fa-user"></i> {{ current_user.username }}</a>
+                        <a href="{{ url_for('logout') }}" class="icon-link"><i class="fas fa-sign-out-alt"></i></a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="icon-link"><i class="fas fa-user"></i></a>
+                    {% endif %}
+                    <a href="{{ url_for('cart') }}" class="cart-icon">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="cart-count">0</span>
                     </a>
@@ -35,9 +39,8 @@
             <nav>
                 <ul>
                     <li><a href="{{ url_for('index') }}">Strona główna</a></li>
-                    <li><a href="#" class="active">Kategorie</a></li>
+                    <li><a href="{{ url_for('categories') }}" class="active">Kategorie</a></li>
                     <li><a href="#">Promocje</a></li>
-                    <li><a href="#">Bestsellery</a></li>
                     <li><a href="#">O nas</a></li>
                     <li><a href="#">Kontakt</a></li>
                 </ul>
@@ -102,17 +105,6 @@
                                 <span>-</span>
                                 <input type="number" placeholder="do" id="price_max">
                                 <button class="filter-button">OK</button>
-                            </div>
-                        </div>
-                        <div class="sidebar-filter">
-                            <h4>Marka</h4>
-                            <div class="checkbox-filter">
-                                {% for brand in brands %}
-                                <div class="filter-item">
-                                    <input type="checkbox" id="brand_{{ brand.id }}" name="brand" value="{{ brand.id }}">
-                                    <label for="brand_{{ brand.id }}">{{ brand.name }} ({{ brand.count }})</label>
-                                </div>
-                                {% endfor %}
                             </div>
                         </div>
                         <div class="sidebar-filter">
@@ -197,8 +189,9 @@
                                     <span class="current-price">{{ product.price }} zł</span>
                                 </div>
                                 <div class="product-actions">
-                                    <button class="add-to-cart" data-product-id="{{ product.id }}">Do koszyka</button>
-                                    <button class="add-to-wishlist" data-product-id="{{ product.id }}"><i class="far fa-heart"></i></button>
+                                    <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+                                        <button type="submit" class="add-to-cart">Do koszyka</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -244,9 +237,8 @@
                     <h4>Przydatne linki</h4>
                     <ul>
                         <li><a href="{{ url_for('index') }}">Strona główna</a></li>
-                        <li><a href="#">Kategorie</a></li>
+                        <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
                         <li><a href="#">Promocje</a></li>
-                        <li><a href="#">Bestsellery</a></li>
                         <li><a href="#">O nas</a></li>
                         <li><a href="#">Kontakt</a></li>
                     </ul>

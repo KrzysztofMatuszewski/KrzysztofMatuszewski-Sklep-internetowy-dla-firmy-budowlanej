@@ -179,3 +179,4 @@ VALUES
 
 --@block
 --ważne - modyfikacja zamówień
+ALTER TABLE `orders` MODIFY COLUMN `status` ENUM('pending', 'completed', 'canceled', 'cart') NOT NULL;

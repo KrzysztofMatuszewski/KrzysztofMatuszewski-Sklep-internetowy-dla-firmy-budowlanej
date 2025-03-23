@@ -1,10 +1,10 @@
-<!-- templates/cart.html -->
+<!-- templates/order_history.html -->
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Koszyk - BudowMax</title>
+    <title>Historia zamówień - BudowMax</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -30,9 +30,9 @@
                     {% else %}
                         <a href="{{ url_for('login') }}" class="icon-link"><i class="fas fa-user"></i></a>
                     {% endif %}
-                    <a href="{{ url_for('cart') }}" class="cart-icon active">
+                    <a href="{{ url_for('cart') }}" class="cart-icon">
                         <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-count">{{ cart_products|length }}</span>
+                        <span class="cart-count">0</span>
                     </a>
                 </div>
             </div>
@@ -56,15 +56,15 @@
         <div class="container">
             <ul>
                 <li><a href="{{ url_for('index') }}">Strona główna</a></li>
-                <li>Koszyk</li>
+                <li>Historia zamówień</li>
             </ul>
         </div>
     </section>
 
-    <!-- Zawartość koszyka -->
-    <section class="cart-page">
+    <!-- Zawartość historii zamówień -->
+    <section class="orders-page">
         <div class="container">
-            <h1>Twój koszyk</h1>
+            <h1>Historia zamówień</h1>
             
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
@@ -76,103 +76,59 @@
                 {% endif %}
             {% endwith %}
             
-            <!-- Koszyk pusty -->
-            {% if not cart_products %}
-            <div class="cart-empty">
-                <div class="cart-empty-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <h2>Twój koszyk jest pusty</h2>
-                <p>Dodaj produkty do koszyka, aby kontynuować zakupy</p>
-                <a href="{{ url_for('categories') }}" class="btn btn-primary">Przeglądaj produkty</a>
-            </div>
-            {% else %}
-            <!-- Ten blok będzie widoczny, gdy w koszyku będą produkty -->
-            <div class="cart-content">
-                <div class="cart-table">
-                    <table>
+            <div class="orders-content">
+                {% if orders %}
+                <div class="orders-list">
+                    <table class="orders-table">
                         <thead>
                             <tr>
-                                <th>Produkt</th>
-                                <th>Cena</th>
-                                <th>Ilość</th>
+                                <th>Nr zamówienia</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Liczba produktów</th>
                                 <th>Wartość</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Wiersze z produktami -->
-                            {% for product in cart_products %}
-                            <tr class="cart-item" data-product-id="{{ product.id }}">
-                                <td class="cart-product">
-                                    <div class="cart-product-image">
-                                        <img src="{{ product.image_url }}" alt="{{ product.name }}">
-                                    </div>
-                                    <div class="cart-product-info">
-                                        <h3><a href="{{ url_for('product', product_id=product.id) }}">{{ product.name }}</a></h3>
-                                    </div>
+                            {% for order in orders %}
+                            <tr class="order-row">
+                                <td class="order-id">#{{ order.id }}</td>
+                                <td class="order-date">{{ order.date.strftime('%d.%m.%Y') }}</td>
+                                <td class="order-status">
+                                    <span class="status-badge status-{{ order.status }}">
+                                        {% if order.status == 'pending' %}
+                                            Oczekujące
+                                        {% elif order.status == 'completed' %}
+                                            Zrealizowane
+                                        {% elif order.status == 'canceled' %}
+                                            Anulowane
+                                        {% else %}
+                                            {{ order.status }}
+                                        {% endif %}
+                                    </span>
                                 </td>
-                                <td class="cart-price">
-                                    {% if product.old_price %}
-                                    <span class="old-price">{{ product.old_price }} zł</span><br>
-                                    {% endif %}
-                                    <span class="current-price">{{ product.price }} zł</span>
-                                </td>
-                                <td class="cart-quantity">
-                                    <div class="quantity-box">
-                                        <button type="button" class="quantity-btn decrease" data-product-id="{{ product.id }}">-</button>
-                                        <input type="number" name="quantity" value="{{ product.quantity }}" min="1" max="{{ product.stock }}" class="product-quantity" data-product-id="{{ product.id }}">
-                                        <button type="button" class="quantity-btn increase" data-product-id="{{ product.id }}">+</button>
-                                    </div>
-                                    <div class="stock-info">Dostępne: {{ product.stock }} szt.</div>
-                                </td>
-                                <td class="cart-total">
-                                    <span class="total-price">{{ product.total_price }} zł</span>
-                                    {% if product.quantity > 1 %}
-                                    <div class="unit-price">({{ product.price }} zł/szt.)</div>
-                                    {% endif %}
-                                </td>
-                                <td class="cart-remove">
-                                    <form action="{{ url_for('remove_from_cart', product_id=product.id) }}" method="POST">
-                                        <button type="submit" class="remove-from-cart" data-product-id="{{ product.id }}">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
+                                <td class="order-items">{{ order.items_count }} szt.</td>
+                                <td class="order-total">{{ order.total_price }} zł</td>
+                                <td class="order-actions">
+                                    <a href="{{ url_for('order_details', order_id=order.id) }}" class="btn btn-sm">Szczegóły</a>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                
-                <div class="cart-summary">
-                    <div class="cart-total">
-                        <h3>Podsumowanie</h3>
-                        <div class="summary-row">
-                            <span>Wartość produktów:</span>
-                            <span class="cart-subtotal">{{ cart_total }} zł</span>
-                        </div>
-                        <div class="summary-row">
-                            <span>Koszt dostawy:</span>
-                            <span class="cart-shipping">{{ shipping_cost }} zł</span>
-                        </div>
-                        <div class="summary-row total">
-                            <span>Razem:</span>
-                            <span class="cart-total-price">{{ total_with_shipping }} zł</span>
-                        </div>
-                        <div class="cart-actions">
-                            {% if current_user.is_authenticated %}
-                                <a href="{{ url_for('checkout') }}" class="btn btn-primary">Zrealizuj zamówienie</a>
-                            {% else %}
-                                <a href="{{ url_for('login') }}?next={{ url_for('cart') }}" class="btn btn-primary">
-                                    Zaloguj się, aby złożyć zamówienie
-                                </a>
-                            {% endif %}
-                        </div>
+                {% else %}
+                <div class="orders-empty">
+                    <div class="orders-empty-icon">
+                        <i class="fas fa-shopping-bag"></i>
                     </div>
+                    <h2>Nie masz jeszcze żadnych zamówień</h2>
+                    <p>Przeglądaj produkty i złóż swoje pierwsze zamówienie</p>
+                    <a href="{{ url_for('categories') }}" class="btn btn-primary">Przeglądaj produkty</a>
                 </div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </section>
 
@@ -231,6 +187,5 @@
 
     <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 </body>
 </html>

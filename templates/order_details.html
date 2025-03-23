@@ -1,0 +1,265 @@
+<!-- templates/order_details.html -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szczegóły zamówienia - BudowMax</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header z nawigacją -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>BudowMax</h1>
+                <p>Hurtownia sprzętu i materiałów budowlanych</p>
+            </div>
+            <div class="header-right">
+                <div class="header-search">
+                    <form>
+                        <input type="text" placeholder="Czego szukasz?">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="header-icons">
+                    {% if current_user.is_authenticated %}
+                        <a href="#" class="icon-link"><i class="fas fa-user"></i> {{ current_user.username }}</a>
+                        <a href="{{ url_for('logout') }}" class="icon-link"><i class="fas fa-sign-out-alt"></i></a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="icon-link"><i class="fas fa-user"></i></a>
+                    {% endif %}
+                    <a href="{{ url_for('cart') }}" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                    <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
+                    <li><a href="#">Promocje</a></li>
+                    <li><a href="#">O nas</a></li>
+                    <li><a href="#">Kontakt</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ścieżka -->
+    <section class="breadcrumb">
+        <div class="container">
+            <ul>
+                <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                <li><a href="{{ url_for('order_history') }}">Historia zamówień</a></li>
+                <li>Zamówienie #{{ order.id }}</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Szczegóły zamówienia -->
+    <section class="order-details-page">
+        <div class="container">
+            <h1>Szczegóły zamówienia #{{ order.id }}</h1>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <div class="flash-message">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <div class="order-details-content">
+                <div class="order-details-header">
+                    <div class="order-meta">
+                        <p>Data zamówienia: {{ order.createdAt.strftime('%d.%m.%Y, %H:%M') }}</p>
+                        <p>Status: 
+                            <span class="status-badge status-{{ order.status }}">
+                                {% if order.status == 'pending' %}
+                                    Oczekujące
+                                {% elif order.status == 'completed' %}
+                                    Zrealizowane
+                                {% elif order.status == 'canceled' %}
+                                    Anulowane
+                                {% else %}
+                                    {{ order.status }}
+                                {% endif %}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="order-details-body">
+                    <div class="order-products">
+                        <h2>Zamówione produkty</h2>
+                        <table class="order-table">
+                            <thead>
+                                <tr>
+                                    <th>Produkt</th>
+                                    <th>Cena</th>
+                                    <th>Ilość</th>
+                                    <th>Wartość</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in order_products %}
+                                <tr class="order-item">
+                                    <td class="order-product">
+                                        <div class="order-product-image">
+                                            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                                        </div>
+                                        <div class="order-product-info">
+                                            <h4>{{ product.name }}</h4>
+                                        </div>
+                                    </td>
+                                    <td class="order-price">
+                                        {{ product.price }} zł
+                                    </td>
+                                    <td class="order-quantity">
+                                        {{ product.quantity }} szt.
+                                    </td>
+                                    <td class="order-total">
+                                        {{ product.total_price }} zł
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="order-sum-label">Razem:</td>
+                                    <td class="order-sum-value">{{ order_total }} zł</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="order-info-grid">
+                        <div class="order-info-box">
+                            <h3>Informacje o płatności</h3>
+                            <p>Metoda płatności: <strong>Przelew bankowy</strong></p>
+                            <p>Status płatności: <span class="status-badge status-pending">Oczekująca</span></p>
+                            <div class="bank-details">
+                                <p>Dane do przelewu:</p>
+                                <p>BudowMax Sp. z o.o.</p>
+                                <p>Nr konta: 12 3456 7890 1234 5678 9012 3456</p>
+                                <p>Tytuł przelewu: Zamówienie nr {{ order.id }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="order-info-box">
+                            <h3>Dane dostawy</h3>
+                            <p>{{ current_user.username }}</p>
+                            <p>{{ current_user.email }}</p>
+                            <p>ul. Przykładowa 123</p>
+                            <p>00-000 Warszawa</p>
+                        </div>
+                        
+                        <div class="order-info-box">
+                            <h3>Status zamówienia</h3>
+                            <div class="order-timeline">
+                                <div class="timeline-item active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-date">{{ order.createdAt.strftime('%d.%m.%Y') }}</span>
+                                        <p>Zamówienie złożone</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item {% if order.status != 'pending' %}active{% endif %}">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-date">-</span>
+                                        <p>Płatność zaksięgowana</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item {% if order.status == 'completed' %}active{% endif %}">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-date">-</span>
+                                        <p>Zamówienie wysłane</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item {% if order.status == 'completed' %}active{% endif %}">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-date">-</span>
+                                        <p>Zamówienie zrealizowane</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="order-details-actions">
+                    <a href="{{ url_for('order_history') }}" class="btn btn-secondary">Powrót do historii zamówień</a>
+                    <a href="#" class="btn btn-outline">Kontakt w sprawie zamówienia</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stopka -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h3>BudowMax</h3>
+                    <p>Hurtownia sprzętu i materiałów budowlanych</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Przydatne linki</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                        <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
+                        <li><a href="#">Promocje</a></li>
+                        <li><a href="#">O nas</a></li>
+                        <li><a href="#">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Informacje</h4>
+                    <ul>
+                        <li><a href="#">Regulamin</a></li>
+                        <li><a href="#">Polityka prywatności</a></li>
+                        <li><a href="#">Dostawa i płatności</a></li>
+                        <li><a href="#">Reklamacje i zwroty</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Obserwuj nas</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="payment-methods">
+                        <h4>Metody płatności</h4>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BudowMax - Wszelkie prawa zastrzeżone.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

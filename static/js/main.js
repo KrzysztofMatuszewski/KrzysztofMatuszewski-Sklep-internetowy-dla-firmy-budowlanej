@@ -1,5 +1,3 @@
-// static/js/main.js
-
 document.addEventListener('DOMContentLoaded', function() {
     // Obsługa menu mobilnego
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
@@ -8,157 +6,103 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mobileMenuBtn) {
         mobileMenuBtn.addEventListener('click', function() {
             nav.classList.toggle('active');
-            mobileMenuBtn.querySelector('i').classList.toggle('fa-bars');
-            mobileMenuBtn.querySelector('i').classList.toggle('fa-times');
         });
     }
     
-    // Obsługa przycisku dodaj do koszyka
-    const addToCartButtons = document.querySelectorAll('.add-to-cart');
-    addToCartButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = this.getAttribute('data-product-id');
-            let quantity = 1;
-            
-            // Jeśli jest pole ilości, pobieramy wartość
-            const quantityInput = document.getElementById('product-quantity');
-            if (quantityInput) {
-                quantity = parseInt(quantityInput.value);
-            }
-            
-            // Symulacja dodania do koszyka
-            console.log(`Dodano produkt ID: ${productId}, ilość: ${quantity} do koszyka`);
-            
-            // Zaktualizuj licznik koszyka
-            const cartCount = document.querySelector('.cart-count');
-            if (cartCount) {
-                cartCount.textContent = parseInt(cartCount.textContent) + quantity;
-            }
-            
-            // Pokaż komunikat
-            showNotification('Produkt dodany do koszyka', 'success');
-        });
-    });
-    
-    // Obsługa przycisku dodaj do ulubionych
-    const addToWishlistButtons = document.querySelectorAll('.add-to-wishlist');
-    addToWishlistButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = this.getAttribute('data-product-id');
-            
-            // Symulacja dodania do ulubionych
-            console.log(`Dodano produkt ID: ${productId} do ulubionych`);
-            
-            // Zmiana ikony serca
-            const heartIcon = this.querySelector('i');
-            heartIcon.classList.toggle('far');
-            heartIcon.classList.toggle('fas');
-            
-            // Pokaż komunikat
-            showNotification('Produkt dodany do ulubionych', 'success');
-        });
-    });
-    
-    // Obsługa zdjęć produktu (miniatury)
-    const productThumbnails = document.querySelectorAll('.product-thumbnail');
-    const mainProductImage = document.getElementById('main-product-image');
-    
-    if (productThumbnails.length > 0 && mainProductImage) {
-        productThumbnails.forEach(thumbnail => {
-            thumbnail.addEventListener('click', function() {
-                // Usuń klasę active ze wszystkich miniatur
-                productThumbnails.forEach(item => item.classList.remove('active'));
-                
-                // Dodaj klasę active do klikniętej miniatury
-                this.classList.add('active');
-                
-                // Zaktualizuj główne zdjęcie
-                const imageUrl = this.getAttribute('data-image');
-                mainProductImage.src = imageUrl;
-            });
-        });
-    }
-    
-    // Obsługa przycisków ilości
-    const decreaseBtn = document.querySelector('.quantity-btn.decrease');
-    const increaseBtn = document.querySelector('.quantity-btn.increase');
-    const quantityInput = document.getElementById('product-quantity');
-    
-    if (decreaseBtn && increaseBtn && quantityInput) {
-        decreaseBtn.addEventListener('click', function() {
-            let value = parseInt(quantityInput.value);
-            if (value > 1) {
-                quantityInput.value = value - 1;
-            }
-        });
+    // Inicjalizacja licznika koszyka
+    function updateCartCount() {
+        const cartCountElements = document.querySelectorAll('.cart-count');
+        if (cartCountElements.length === 0) return;
         
-        increaseBtn.addEventListener('click', function() {
-            let value = parseInt(quantityInput.value);
-            let max = parseInt(quantityInput.getAttribute('max'));
-            if (value < max) {
-                quantityInput.value = value + 1;
-            } else {
-                showNotification('Osiągnięto maksymalną dostępną ilość', 'warning');
+        // Pobierz aktualną zawartość koszyka
+        fetch('/get_cart_count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Aktualizuj licznik w koszyku
+            cartCountElements.forEach(element => {
+                element.textContent = data.count;
+            });
+        })
+        .catch(error => {
+            console.error('Błąd pobierania liczby produktów w koszyku:', error);
         });
     }
     
-    // Obsługa zakładek na stronie produktu
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabPanes = document.querySelectorAll('.tab-pane');
+    // Wywołaj aktualizację licznika przy ładowaniu strony
+    updateCartCount();
     
-    if (tabButtons.length > 0) {
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Usuń klasę active ze wszystkich przycisków
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                
-                // Dodaj klasę active do klikniętego przycisku
-                this.classList.add('active');
-                
-                // Pokaż odpowiednią zakładkę
-                const tabId = this.getAttribute('data-tab');
-                tabPanes.forEach(pane => {
-                    pane.classList.remove('active');
-                    if (pane.id === tabId) {
-                        pane.classList.add('active');
+    // Obsługa formularzy dodawania do koszyka używając AJAX
+    const addToCartForms = document.querySelectorAll('form[action^="/add_to_cart/"]');
+    
+    addToCartForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Pobierz dane formularza
+            const formData = new FormData(this);
+            const actionUrl = this.getAttribute('action');
+            
+            // Wykonaj żądanie AJAX
+            fetch(actionUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Aktualizuj licznik koszyka w nagłówku
+                    updateCartCounters(data.cart_count, data.total_items);
+                    
+                    // Sprawdź, czy dodanie do koszyka było z kategorii (przekieruj do koszyka)
+                    if (window.location.pathname.includes('/category/')) {
+                        window.location.href = '/cart';
+                        return;
                     }
-                });
+                    
+                    // Pokaż powiadomienie o sukcesie
+                    showNotification(data.message, 'success');
+                } else {
+                    // Pokaż powiadomienie o błędzie
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Błąd dodawania do koszyka:', error);
+                showNotification('Wystąpił błąd podczas dodawania produktu do koszyka', 'error');
             });
         });
-    }
+    });
     
-    // Obsługa filtrów w kategorii
-    const filterApplyBtn = document.querySelector('.filter-apply-btn');
-    const filterClearBtn = document.querySelector('.filter-clear-btn');
-    
-    if (filterApplyBtn) {
-        filterApplyBtn.addEventListener('click', function() {
-            // Symulacja filtrowania
-            showNotification('Filtry zostały zastosowane', 'success');
+    // Funkcja do aktualizacji liczników koszyka w nagłówku
+    function updateCartCounters(count, totalItems) {
+        // Aktualizuj licznik w koszyku w nagłówku
+        const cartCountElements = document.querySelectorAll('.cart-count');
+        cartCountElements.forEach(element => {
+            element.textContent = count;
         });
     }
     
-    if (filterClearBtn) {
-        filterClearBtn.addEventListener('click', function() {
-            // Wyczyść wszystkie checkboxy
-            document.querySelectorAll('.sidebar-filter input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            
-            // Wyczyść pola ceny
-            const priceMin = document.getElementById('price_min');
-            const priceMax = document.getElementById('price_max');
-            if (priceMin) priceMin.value = '';
-            if (priceMax) priceMax.value = '';
-            
-            // Symulacja wyczyszczenia filtrów
-            showNotification('Filtry zostały wyczyszczone', 'info');
-        });
-    }
+    // Globalny licznik aktywnych powiadomień
+    let activeNotificationsCount = 0;
+    const MAX_NOTIFICATIONS = 5;
     
     // Funkcja do wyświetlania powiadomień
     function showNotification(message, type = 'info') {
+        // Jeśli jest już maksymalna liczba powiadomień, usuń najstarsze
+        const notifications = document.querySelectorAll('#notifications-container .notification');
+        if (notifications.length >= MAX_NOTIFICATIONS) {
+            notifications[0].remove();
+        }
+        
         // Sprawdź, czy kontener powiadomień istnieje, jeśli nie, utwórz go
         let notificationsContainer = document.getElementById('notifications-container');
         if (!notificationsContainer) {
@@ -214,19 +158,71 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Obsługa formularza newslettera
-    const newsletterForm = document.querySelector('.newsletter-form');
-    if (newsletterForm) {
-        newsletterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const emailInput = this.querySelector('input[type="email"]');
-            const email = emailInput.value;
-            
-            if (email) {
-                // Symulacja zapisania do newslettera
-                console.log(`Zapisano adres ${email} do newslettera`);
-                showNotification('Dziękujemy za zapisanie się do newslettera!', 'success');
-                emailInput.value = '';
+    // Obsługa miniatur produktu
+    const productThumbnails = document.querySelectorAll('.product-thumbnail');
+    const mainProductImage = document.getElementById('main-product-image');
+    
+    if (productThumbnails.length > 0 && mainProductImage) {
+        productThumbnails.forEach(thumbnail => {
+            thumbnail.addEventListener('click', function() {
+                // Pobierz URL obrazu
+                const imageUrl = this.getAttribute('data-image');
+                
+                // Zaktualizuj główny obraz
+                mainProductImage.src = imageUrl;
+                
+                // Zaktualizuj aktywną miniaturę
+                productThumbnails.forEach(thumb => {
+                    thumb.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+    }
+    
+    // Obsługa zakładek na stronie produktu
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    
+    if (tabButtons.length > 0) {
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Pobierz ID zakładki do pokazania
+                const tabId = this.getAttribute('data-tab');
+                
+                // Zaktualizuj aktywny przycisk
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Zaktualizuj aktywną zakładkę
+                tabPanes.forEach(pane => {
+                    pane.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    }
+    
+    // NOWE: Obsługa przycisków zmiany ilości na stronie produktu
+    const productQuantityInput = document.getElementById('product-quantity');
+    const decreaseBtn = document.querySelector('.product-actions .quantity-btn.decrease');
+    const increaseBtn = document.querySelector('.product-actions .quantity-btn.increase');
+    
+    if (productQuantityInput && decreaseBtn && increaseBtn) {
+        decreaseBtn.addEventListener('click', function() {
+            let currentVal = parseInt(productQuantityInput.value);
+            if (!isNaN(currentVal) && currentVal > 1) {
+                productQuantityInput.value = currentVal - 1;
+            }
+        });
+        
+        increaseBtn.addEventListener('click', function() {
+            let currentVal = parseInt(productQuantityInput.value);
+            let maxVal = parseInt(productQuantityInput.getAttribute('max') || 99);
+            if (!isNaN(currentVal) && currentVal < maxVal) {
+                productQuantityInput.value = currentVal + 1;
             }
         });
     }

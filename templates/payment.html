@@ -1,0 +1,185 @@
+<!-- templates/payment.html -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realizacja płatności - BudowMax</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header z nawigacją -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>BudowMax</h1>
+                <p>Hurtownia sprzętu i materiałów budowlanych</p>
+            </div>
+            <div class="header-right">
+                <div class="header-search">
+                    <form>
+                        <input type="text" placeholder="Czego szukasz?">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="header-icons">
+                    {% if current_user.is_authenticated %}
+                        <a href="#" class="icon-link"><i class="fas fa-user"></i> {{ current_user.username }}</a>
+                        <a href="{{ url_for('logout') }}" class="icon-link"><i class="fas fa-sign-out-alt"></i></a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="icon-link"><i class="fas fa-user"></i></a>
+                    {% endif %}
+                    <a href="{{ url_for('cart') }}" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                    <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
+                    <li><a href="#">Promocje</a></li>
+                    <li><a href="#">O nas</a></li>
+                    <li><a href="#">Kontakt</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ścieżka -->
+    <section class="breadcrumb">
+        <div class="container">
+            <ul>
+                <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                <li><a href="{{ url_for('checkout') }}">Zamówienie</a></li>
+                <li>Płatność</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Płatność -->
+    <section class="payment-page">
+        <div class="container">
+            <div class="payment-content">
+                <h1>Realizacja płatności</h1>
+                
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for message in messages %}
+                                <div class="flash-message">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                
+                <div class="payment-details">
+                    <h2>Szczegóły zamówienia #{{ order.id }}</h2>
+                    <p>Wartość zamówienia: {{ order.totalPrice }} zł</p>
+                    
+                    <div class="payment-method">
+                        <h3>Wybrana metoda płatności:</h3>
+                        <div class="method-icon">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Karta płatnicza</span>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-form">
+                        <form action="{{ url_for('process_payment', order_id=order.id) }}" method="POST">
+                            <div class="form-group">
+                                <label for="card_number">Numer karty</label>
+                                <input type="text" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" required>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="expiry_date">Data ważności</label>
+                                    <input type="text" id="expiry_date" name="expiry_date" placeholder="MM/RR" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="cvv">Kod CVV</label>
+                                    <input type="text" id="cvv" name="cvv" placeholder="123" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="card_holder">Imię i nazwisko na karcie</label>
+                                <input type="text" id="card_holder" name="card_holder" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary payment-btn">Zapłać {{ order.totalPrice }} zł</button>
+                        </form>
+                    </div>
+                    
+                    <div class="payment-info">
+                        <p><i class="fas fa-lock"></i> Twoje dane są bezpieczne. Używamy szyfrowania 256-bit SSL.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stopka -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h3>BudowMax</h3>
+                    <p>Hurtownia sprzętu i materiałów budowlanych</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Przydatne linki</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                        <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
+                        <li><a href="#">Promocje</a></li>
+                        <li><a href="#">O nas</a></li>
+                        <li><a href="#">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Informacje</h4>
+                    <ul>
+                        <li><a href="#">Regulamin</a></li>
+                        <li><a href="#">Polityka prywatności</a></li>
+                        <li><a href="#">Dostawa i płatności</a></li>
+                        <li><a href="#">Reklamacje i zwroty</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Obserwuj nas</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="payment-methods">
+                        <h4>Metody płatności</h4>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BudowMax - Wszelkie prawa zastrzeżone.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/payment.js') }}"></script>
+</body>
+</html>

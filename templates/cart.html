@@ -164,7 +164,7 @@
                             {% if current_user.is_authenticated %}
                                 <a href="{{ url_for('checkout') }}" class="btn btn-primary">Zrealizuj zamówienie</a>
                             {% else %}
-                                <a href="{{ url_for('login') }}?next={{ url_for('cart') }}" class="btn btn-primary">
+                                <a href="{{ url_for('login') }}?next={{ url_for('process_checkout_login') }}" class="btn btn-primary">
                                     Zaloguj się, aby złożyć zamówienie
                                 </a>
                             {% endif %}

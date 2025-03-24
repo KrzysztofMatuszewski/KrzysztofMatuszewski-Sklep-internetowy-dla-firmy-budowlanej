@@ -6,6 +6,8 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from sqlalchemy import func
+import random  # Do mechanizmu pseudolosowości płatności
+import re
 
 # Inicjalizacja aplikacji
 app = Flask(__name__)
@@ -929,8 +931,9 @@ def get_cart_count():
     unique_items = len(cart_items)
     return jsonify({'count': unique_items, 'total_items': total_items})
 
+# Modyfikacja funkcji checkout, aby walidowała dane formularza
 @app.route('/checkout', methods=['GET', 'POST'])
-@login_required  # Wymagane logowanie do realizacji zamówienia
+@login_required
 def checkout():
     if request.method == 'POST':
         # Pobierz koszyk użytkownika
@@ -938,10 +941,6 @@ def checkout():
         if not cart_order or OrderItem.query.filter_by(orderId=cart_order.id).count() == 0:
             flash('Twój koszyk jest pusty')
             return redirect(url_for('cart'))
-        
-        # Zapisz dane adresowe z formularza
-        # W rzeczywistej implementacji zapisalibyśmy dane dostawy do bazy danych
-        # Tutaj, dla uproszczenia, tylko aktualizujemy status zamówienia
         
         # Pobierz dane formularza
         full_name = request.form.get('full_name')
@@ -952,6 +951,68 @@ def checkout():
         city = request.form.get('city')
         payment_method = request.form.get('payment_method')
         notes = request.form.get('notes')
+        
+        # Walidacja danych
+        errors = []
+        
+        if not full_name or len(full_name.strip()) < 3:
+            errors.append('Imię i nazwisko jest wymagane (min. 3 znaki)')
+        
+        if not email or '@' not in email:
+            errors.append('Podaj poprawny adres email')
+        
+        # Walidacja numeru telefonu - 9 cyfr
+        if not phone or not re.match(r'^(\d{3}-\d{3}-\d{3}|\d{9})$', phone.replace('-', '')):
+            errors.append('Numer telefonu musi składać się z 9 cyfr')
+        
+        if not street or len(street.strip()) < 3:
+            errors.append('Adres jest wymagany')
+        
+        # Walidacja kodu pocztowego - 2 cyfry-3 cyfry
+
+        if not postal_code or not re.match(r'^\d{2}-\d{3}$', postal_code):
+            errors.append('Kod pocztowy musi być w formacie XX-XXX')
+        
+        if not city or not city.isalpha():
+            errors.append('Nazwa miejscowości może zawierać tylko litery')
+        
+        if not payment_method:
+            errors.append('Wybierz metodę płatności')
+        
+        # Jeśli są błędy, wyświetl je i wróć do formularza
+        if errors:
+            for error in errors:
+                flash(error)
+            
+            # Pobierz elementy koszyka dla wyświetlenia
+            cart_items = OrderItem.query.filter_by(orderId=cart_order.id).all()
+            
+            cart_products = []
+            for item in cart_items:
+                product = Product.query.get(item.productId)
+                if product:
+                    cart_products.append({
+                        'id': product.id,
+                        'name': product.name,
+                        'price': float(item.sellPrice),
+                        'old_price': float(item.sellPrice) * 1.2 if product.id % 2 == 0 else None,
+                        'discount': 20 if product.id % 2 == 0 else None,
+                        'quantity': item.quantity,
+                        'total_price': float(item.totalSellPrice),
+                        'stock': product.stock,
+                        'image_url': '/static/img/products/placeholder.jpg',
+                    })
+            
+            # Oblicz wartości
+            cart_total = float(cart_order.totalPrice)
+            shipping_cost = 15 if cart_total < 200 and cart_total > 0 else 0
+            total_with_shipping = cart_total + shipping_cost
+            
+            return render_template('checkout.html', 
+                                 cart_products=cart_products, 
+                                 cart_total=cart_total, 
+                                 shipping_cost=shipping_cost,
+                                 total_with_shipping=total_with_shipping)
         
         # Aktualizuj status zamówienia i datę
         cart_order.status = 'pending'
@@ -964,6 +1025,8 @@ def checkout():
             if product:
                 # Zaktualizuj stan magazynowy
                 product.stock -= item.quantity
+                if product.stock < 0:
+                    product.stock = 0
         
         # Zapisz zmiany w bazie danych
         db.session.commit()
@@ -971,8 +1034,8 @@ def checkout():
         # Komunikat o sukcesie
         flash('Twoje zamówienie zostało pomyślnie złożone')
         
-        # Przekieruj na stronę potwierdzenia zamówienia
-        return redirect(url_for('order_confirmation', order_id=cart_order.id))
+        # Przekieruj do przetwarzania płatności
+        return redirect(url_for('process_payment', order_id=cart_order.id))
     
     # Metoda GET - wyświetl stronę z formularzem realizacji zamówienia
     cart_order = Order.query.filter_by(userId=current_user.id, status='cart').first()
@@ -1009,6 +1072,178 @@ def checkout():
                           cart_total=cart_total, 
                           shipping_cost=shipping_cost,
                           total_with_shipping=total_with_shipping)
+    
+# Endpoint do wyświetlania potwierdzenia zamówienia
+@app.route('/order_confirmation/<int:order_id>')
+@login_required
+def order_confirmation(order_id):
+    # Pobierz zamówienie
+    order = Order.query.get_or_404(order_id)
+    
+    # Sprawdź, czy zamówienie należy do aktualnego użytkownika
+    if order.userId != current_user.id:
+        flash('Nie masz dostępu do tego zamówienia')
+        return redirect(url_for('index'))
+    
+    # Pobierz produkty z zamówienia
+    order_items = OrderItem.query.filter_by(orderId=order.id).all()
+    
+    order_products = []
+    order_total = 0
+    
+    for item in order_items:
+        product = Product.query.get(item.productId)
+        if product:
+            product_dict = {
+                'name': product.name,
+                'price': float(item.sellPrice),
+                'quantity': item.quantity,
+                'total_price': float(item.totalSellPrice),
+                'image_url': '/static/img/products/placeholder.jpg',
+            }
+            order_products.append(product_dict)
+            order_total += float(item.totalSellPrice)
+    
+    return render_template('order_confirmation.html', 
+                          order=order, 
+                          order_products=order_products, 
+                          order_total=order_total)
+    
+@app.route('/order_details/<int:order_id>')
+@login_required
+def order_details(order_id):
+    # Pobierz zamówienie
+    order = Order.query.get_or_404(order_id)
+    
+    # Sprawdź, czy zamówienie należy do aktualnego użytkownika
+    if order.userId != current_user.id:
+        flash('Nie masz dostępu do tego zamówienia')
+        return redirect(url_for('index'))
+    
+    # Pobierz produkty z zamówienia
+    order_items = OrderItem.query.filter_by(orderId=order.id).all()
+    
+    order_products = []
+    order_total = 0
+    
+    for item in order_items:
+        product = Product.query.get(item.productId)
+        if product:
+            product_dict = {
+                'id': product.id,
+                'name': product.name,
+                'price': float(item.sellPrice),
+                'quantity': item.quantity,
+                'total_price': float(item.totalSellPrice),
+                'image_url': '/static/img/products/placeholder.jpg',
+            }
+            order_products.append(product_dict)
+            order_total += float(item.totalSellPrice)
+    
+    return render_template('order_details.html', 
+                          order=order, 
+                          order_products=order_products, 
+                          order_total=order_total)
+    
+@app.route('/order_history')
+@login_required
+def order_history():
+    # Pobierz wszystkie zamówienia użytkownika oprócz koszyków
+    orders = Order.query.filter(
+        Order.userId == current_user.id,
+        Order.status != 'cart'
+    ).order_by(Order.createdAt.desc()).all()
+    
+    # Przygotuj listę zamówień z dodatkowymi informacjami
+    order_list = []
+    for order in orders:
+        # Pobierz liczbę produktów w zamówieniu
+        items_count = db.session.query(func.sum(OrderItem.quantity)).filter(
+            OrderItem.orderId == order.id
+        ).scalar() or 0
+        
+        order_dict = {
+            'id': order.id,
+            'date': order.createdAt,
+            'status': order.status,
+            'total_price': float(order.totalPrice),
+            'items_count': items_count
+        }
+        order_list.append(order_dict)
+    
+    return render_template('order_history.html', orders=order_list)
+    
+# Endpoint do przetwarzania płatności
+@app.route('/process_payment/<int:order_id>', methods=['GET', 'POST'])
+@login_required
+def process_payment(order_id):
+    # Pobierz zamówienie
+    order = Order.query.get_or_404(order_id)
+    
+    # Sprawdź, czy zamówienie należy do aktualnego użytkownika
+    if order.userId != current_user.id:
+        flash('Nie masz dostępu do tego zamówienia')
+        return redirect(url_for('index'))
+    
+    # Sprawdź, czy zamówienie ma odpowiedni status
+    if order.status != 'pending':
+        flash('To zamówienie nie oczekuje na płatność')
+        return redirect(url_for('index'))
+    
+    # Dla metody GET wyświetl stronę płatności
+    if request.method == 'GET':
+        return render_template('payment.html', order=order)
+    
+    # Dla metody POST przetwórz płatność
+    # Symulacja płatności - 4 na 5 przypadków to sukces
+    payment_successful = random.randint(1, 5) <= 4
+    
+    if payment_successful:
+        # Płatność udana - zmień status zamówienia na completed
+        order.status = 'completed'
+        
+        # Zapisz zmiany w bazie danych
+        db.session.commit()
+        
+        # Komunikat o sukcesie
+        flash('Twoja płatność została pomyślnie zrealizowana')
+        
+        return render_template('payment_success.html', order=order)
+    else:
+        # Płatność nieudana
+        flash('Wystąpił błąd podczas przetwarzania płatności')
+        
+        return render_template('payment_failed.html', order=order)
+    
+# Endpoint do ponownej próby płatności
+@app.route('/retry_payment/<int:order_id>', methods=['POST'])
+@login_required
+def retry_payment(order_id):
+    return redirect(url_for('process_payment', order_id=order_id))
+
+# Endpoint do anulowania zamówienia
+@app.route('/cancel_order/<int:order_id>', methods=['POST'])
+@login_required
+def cancel_order(order_id):
+    # Pobierz zamówienie
+    order = Order.query.get_or_404(order_id)
+    
+    # Sprawdź, czy zamówienie należy do aktualnego użytkownika
+    if order.userId != current_user.id:
+        flash('Nie masz dostępu do tego zamówienia')
+        return redirect(url_for('index'))
+    
+    # Zmień status zamówienia na anulowane
+    order.status = 'canceled'
+    
+    # Zapisz zmiany w bazie danych
+    db.session.commit()
+    
+    # Komunikat o anulowaniu
+    flash('Twoje zamówienie zostało anulowane')
+    
+    return redirect(url_for('index'))
+
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 

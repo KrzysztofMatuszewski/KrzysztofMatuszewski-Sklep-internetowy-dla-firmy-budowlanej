@@ -42,16 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Formatowanie CVV - tylko cyfry, max 3 lub 4
+    // Formatowanie CVV - tylko cyfry, max 3 cyfry
     const cvvInput = document.getElementById('cvv');
     if (cvvInput) {
         cvvInput.addEventListener('input', function(e) {
             // Usuń wszystkie znaki niebędące cyframi
             let value = this.value.replace(/\D/g, '');
             
-            // Maksymalnie 4 cyfry
-            if (value.length > 4) {
-                value = value.substr(0, 4);
+            // Maksymalnie 3 cyfry
+            if (value.length > 3) {
+                value = value.substr(0, 3);
             }
             
             this.value = value;

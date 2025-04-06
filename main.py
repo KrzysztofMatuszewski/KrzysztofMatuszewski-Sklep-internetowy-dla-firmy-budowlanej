@@ -8,6 +8,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from sqlalchemy import func
 import random  # Do mechanizmu pseudolosowości płatności
 import re
+import json
 
 # Inicjalizacja aplikacji
 app = Flask(__name__)
@@ -87,6 +88,13 @@ class Review(db.Model):
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     productId = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
+    title = db.Column(db.String(255), nullable=True)  # Tytuł recenzji
+    content = db.Column(db.Text, nullable=True)  # Treść recenzji
+    pros = db.Column(db.Text, nullable=True)  # Zalety jako JSON
+    cons = db.Column(db.Text, nullable=True)  # Wady jako JSON
+    helpful_yes = db.Column(db.Integer, default=0)  # Liczba "Tak" dla "Czy pomocna?"
+    helpful_no = db.Column(db.Integer, default=0)  # Liczba "Nie" dla "Czy pomocna?"
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Data utworzenia
 
 class ProductImage(db.Model):
     __tablename__ = 'productImages'
@@ -179,9 +187,14 @@ def get_product_details(product_id):
     images = ProductImage.query.filter_by(productId=product.id).all()
     image_urls = ['/static/img/products/placeholder.jpg'] * 3  # Domyślne obrazy
     
-    # Pobierz recenzje produktu
-    reviews_query = Review.query.filter_by(productId=product.id)
+    # Pobierz recenzje produktu, sortuj wg daty (od najnowszych)
+    reviews_query = Review.query.filter_by(productId=product.id).order_by(Review.created_at.desc())
     reviews = reviews_query.all()
+    
+    # Sprawdź, czy zalogowany użytkownik wystawił ocenę
+    user_review = None
+    if current_user.is_authenticated:
+        user_review = Review.query.filter_by(productId=product.id, userId=current_user.id).first()
     
     # Przygotuj dystrybucję ocen
     rating_counts = {
@@ -201,26 +214,49 @@ def get_product_details(product_id):
         1: (rating_counts[1] / total_ratings * 100) if total_ratings > 0 else 0
     }
     
-    # Przygotuj recenzje w formie listy słowników
+    # Przygotuj recenzje w formie listy słowników (bez oceny użytkownika)
     reviews_list = []
     for review in reviews:
+        # Pomiń ocenę użytkownika, będzie dodana osobno
+        if current_user.is_authenticated and review.userId == current_user.id:
+            continue
+            
         user = User.query.get(review.userId)
         
-        # Ponieważ nie mamy pełnych danych w bazie, tworzymy przykładowe
+        # Przygotuj słownik z recenzją (bez przykładowej treści)
         review_dict = {
             'id': review.id,
             'author': user.username if user else 'Anonim',
-            'date': datetime.now() - timedelta(days=review.id % 30),  # Przykładowa data
+            'date': review.created_at or datetime.utcnow(),
             'rating': review.rating,
-            'title': f'Recenzja produktu {review.rating}/5',
-            'content': f'To jest przykładowa treść recenzji dla produktu o ID {review.productId}. Ocena: {review.rating}/5.',
-            'pros': ['Dobra jakość', 'Atrakcyjna cena'] if review.rating > 3 else ['Szybka dostawa'],
-            'cons': ['Mógłby być tańszy'] if review.rating > 3 else ['Słaba jakość', 'Wysokie ceny'],
-            'helpful_yes': review.id * 2 % 15,  # Przykładowa liczba pozytywnych ocen recenzji
-            'helpful_no': review.id % 5  # Przykładowa liczba negatywnych ocen recenzji
+            'title': review.title or f'Recenzja produktu {review.rating}/5',
+            'content': review.content or '',
+            'pros': json.loads(review.pros or '[]'),
+            'cons': json.loads(review.cons or '[]'),
+            'helpful_yes': review.helpful_yes or 0,
+            'helpful_no': review.helpful_no or 0,
+            'is_from_db': True
         }
         
         reviews_list.append(review_dict)
+    
+    # Jeśli użytkownik ma swoją ocenę, dodaj ją jako osobny element do słownika produktu
+    user_review_dict = None
+    if user_review:
+        user = User.query.get(user_review.userId)
+        user_review_dict = {
+            'id': user_review.id,
+            'author': user.username if user else 'Anonim',
+            'date': user_review.created_at or datetime.utcnow(),
+            'rating': user_review.rating,
+            'title': user_review.title or f'Twoja ocena produktu',
+            'content': user_review.content or '',
+            'pros': json.loads(user_review.pros or '[]'),
+            'cons': json.loads(user_review.cons or '[]'),
+            'helpful_yes': user_review.helpful_yes or 0,
+            'helpful_no': user_review.helpful_no or 0,
+            'is_user_review': True
+        }
     
     # Przygotowanie słownika z danymi produktu
     product_dict = {
@@ -261,8 +297,10 @@ def get_product_details(product_id):
             }
         ],
         'reviews': reviews_list,
+        'user_review': user_review_dict,
         'rating_distribution': rating_distribution,
-        'ratings_count': rating_counts
+        'ratings_count': rating_counts,
+        'has_reviewed': user_review is not None
     }
     
     return product_dict
@@ -1243,6 +1281,214 @@ def cancel_order(order_id):
     flash('Twoje zamówienie zostało anulowane')
     
     return redirect(url_for('index'))
+
+@app.route('/add_review/<int:product_id>', methods=['POST'])
+@login_required
+def add_review(product_id):
+    try:
+        print(f"Rozpoczęcie dodawania recenzji dla produktu {product_id}")
+        
+        # Sprawdź czy produkt istnieje
+        product = Product.query.get_or_404(product_id)
+        print(f"Produkt znaleziony: {product.name}")
+        
+        # Sprawdź czy użytkownik już ocenił ten produkt
+        existing_review = Review.query.filter_by(userId=current_user.id, productId=product_id).first()
+        if existing_review:
+            print(f"Użytkownik już ocenił ten produkt: {existing_review.id}")
+            return jsonify({
+                'success': False,
+                'message': 'Już wystawiłeś ocenę dla tego produktu'
+            })
+        
+        # Pobierz dane z żądania
+        data = request.get_json()
+        print(f"Otrzymane dane: {data}")
+        
+        rating = data.get('rating')
+        title = data.get('title', f'Recenzja produktu {rating}/5')
+        content = data.get('content', '')
+        pros = data.get('pros', '[]')
+        cons = data.get('cons', '[]')
+        
+        # Walidacja oceny
+        if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
+            print(f"Nieprawidłowa ocena: {rating}")
+            return jsonify({
+                'success': False,
+                'message': 'Nieprawidłowa ocena'
+            })
+        
+        # Utwórz nową ocenę
+        new_review = Review(
+            userId=current_user.id,
+            productId=product_id,
+            rating=rating,
+            title=title,
+            content=content,
+            pros=pros,
+            cons=cons,
+            helpful_yes=0,
+            helpful_no=0,
+            created_at=datetime.utcnow()
+        )
+        
+        # Zapisz do bazy danych
+        db.session.add(new_review)
+        db.session.commit()
+        print(f"Recenzja dodana pomyślnie: ID={new_review.id}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Dziękujemy za wystawienie oceny!'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Błąd podczas dodawania oceny: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': f'Wystąpił błąd podczas dodawania oceny: {str(e)}'
+        })
+
+@app.route('/update_review/<int:review_id>', methods=['POST'])
+@login_required
+def update_review(review_id):
+    try:
+        # Pobierz ocenę
+        review = Review.query.get_or_404(review_id)
+        
+        # Sprawdź czy ocena należy do zalogowanego użytkownika
+        if review.userId != current_user.id:
+            return jsonify({
+                'success': False,
+                'message': 'Nie masz uprawnień do modyfikacji tej oceny'
+            })
+        
+        # Pobierz dane z żądania
+        data = request.get_json()
+        rating = data.get('rating')
+        title = data.get('title')
+        content = data.get('content')
+        pros = data.get('pros')
+        cons = data.get('cons')
+        
+        # Walidacja oceny
+        if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
+            return jsonify({
+                'success': False,
+                'message': 'Nieprawidłowa ocena'
+            })
+        
+        # Zaktualizuj dane
+        review.rating = rating
+        if title is not None:
+            review.title = title
+        if content is not None:
+            review.content = content
+        if pros is not None:
+            review.pros = pros
+        if cons is not None:
+            review.cons = cons
+        
+        # Zapisz do bazy danych
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Ocena została zaktualizowana'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Błąd podczas aktualizacji oceny: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Wystąpił błąd podczas aktualizacji oceny'
+        })
+
+# Dodajmy też endpoint do obsługi oceniania pomocności recenzji
+@app.route('/review_helpful/<int:review_id>', methods=['POST'])
+@login_required
+def review_helpful(review_id):
+    try:
+        # Pobierz recenzję
+        review = Review.query.get_or_404(review_id)
+        
+        # Pobierz dane z żądania
+        data = request.get_json()
+        helpful = data.get('helpful')
+        
+        # Sprawdź czy wartość helpful jest poprawna
+        if helpful not in ['yes', 'no']:
+            return jsonify({
+                'success': False,
+                'message': 'Nieprawidłowa wartość parametru helpful'
+            })
+        
+        # Sprawdź czy użytkownik nie ocenia własnej recenzji
+        if review.userId == current_user.id:
+            return jsonify({
+                'success': False,
+                'message': 'Nie możesz oceniać własnej recenzji'
+            })
+        
+        # Aktualizuj licznik pomocności
+        if helpful == 'yes':
+            review.helpful_yes += 1
+        else:
+            review.helpful_no += 1
+        
+        # Zapisz do bazy danych
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Dziękujemy za ocenę przydatności recenzji',
+            'helpful_yes': review.helpful_yes,
+            'helpful_no': review.helpful_no
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Błąd podczas oceny przydatności recenzji: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Wystąpił błąd podczas oceny przydatności recenzji'
+        })
+
+@app.route('/delete_review/<int:review_id>', methods=['POST'])
+@login_required
+def delete_review(review_id):
+    try:
+        # Pobierz ocenę
+        review = Review.query.get_or_404(review_id)
+        
+        # Sprawdź czy ocena należy do zalogowanego użytkownika
+        if review.userId != current_user.id:
+            return jsonify({
+                'success': False,
+                'message': 'Nie masz uprawnień do usunięcia tej oceny'
+            })
+        
+        # Usuń ocenę
+        db.session.delete(review)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Ocena została usunięta'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Błąd podczas usuwania oceny: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Wystąpił błąd podczas usuwania oceny'
+        })
 
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)

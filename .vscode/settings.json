@@ -14,5 +14,6 @@
             "username": "root",
             "password": "root"
         }
-    ]
+    ],
+    "r.lsp.promptToInstall": false
 }

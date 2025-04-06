@@ -64,7 +64,7 @@
     </section>
 
     <!-- Produkt -->
-    <section class="product-page">
+    <section class="product-page" data-product-id="{{ product.id }}">
         <div class="container">
             <div class="product-main">
                 <div class="product-gallery">
@@ -214,24 +214,91 @@
                                     <div class="rating-bar">
                                         <div class="rating-label">{{ i }} <i class="fas fa-star"></i></div>
                                         <div class="rating-progress">
-                                            <div class="rating-progress-bar" style="width: {{ product.rating_distribution[i] }}%"></div>
+                                            <div class="rating-progress-bar" style="width: {{ product.rating_distribution.get(i, 0) }}%"></div>
                                         </div>
-                                        <div class="rating-count">{{ product.ratings_count[i] }}</div>
+                                        <div class="rating-count">{{ product.ratings_count.get(i, 0) }}</div>
                                     </div>
                                     {% endfor %}
                                 </div>
                             </div>
                             <div class="reviews-add">
                                 {% if current_user.is_authenticated %}
-                                <button class="btn btn-primary" id="write-review-btn">Napisz opinię</button>
+                                    {% if not product.has_reviewed %}
+                                        <button class="btn btn-primary" id="write-review-btn">Napisz opinię</button>
+                                    {% endif %}
                                 {% else %}
-                                <div class="review-login-info">
-                                    <p>Tylko zalogowani klienci mogą dodać opinię.</p>
-                                    <a href="{{ url_for('login') }}" class="btn btn-primary">Zaloguj się</a>
-                                </div>
+                                    <div class="review-login-info">
+                                        <p>Tylko zalogowani klienci mogą dodać opinię.</p>
+                                        <a href="{{ url_for('login') }}?next={{ url_for('product', product_id=product.id) }}" class="btn btn-primary">Zaloguj się</a>
+                                    </div>
                                 {% endif %}
                             </div>
                             <div class="reviews-list">
+                                {% if product.user_review %}
+                                    <div class="user-review">
+                                        <div class="user-review-header">
+                                            <h4 class="user-review-title">Moja opinia</h4>
+                                            <div class="user-review-actions">
+                                                <button class="edit-review-btn" 
+                                                        data-review-id="{{ product.user_review.id }}" 
+                                                        data-review-rating="{{ product.user_review.rating }}"
+                                                        data-review-title="{{ product.user_review.title }}"
+                                                        data-review-content="{{ product.user_review.content }}"
+                                                        data-review-pros="{{ product.user_review.pros|tojson }}"
+                                                        data-review-cons="{{ product.user_review.cons|tojson }}">
+                                                    <i class="fas fa-edit"></i> Zmień
+                                                </button>
+                                                <button class="delete-review-btn" 
+                                                        data-review-id="{{ product.user_review.id }}" 
+                                                        data-product-id="{{ product.id }}">
+                                                    <i class="fas fa-trash"></i> Usuń
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="user-review-content">
+                                            <div class="user-review-rating">
+                                                {% for i in range(5) %}
+                                                    {% if i < product.user_review.rating %}
+                                                        <i class="fas fa-star"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            <div class="user-review-date">
+                                                {{ product.user_review.date.strftime('%d.%m.%Y') }}
+                                            </div>
+                                        </div>
+                                        <h4>{{ product.user_review.title }}</h4>
+                                        <p>{{ product.user_review.content }}</p>
+                                        
+                                        {% if product.user_review.pros|length > 0 or product.user_review.cons|length > 0 %}
+                                        <div class="review-pros-cons">
+                                            {% if product.user_review.pros|length > 0 %}
+                                            <div class="review-pros">
+                                                <h5>Zalety</h5>
+                                                <ul>
+                                                    {% for pro in product.user_review.pros %}
+                                                    <li>{{ pro }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            {% endif %}
+                                            {% if product.user_review.cons|length > 0 %}
+                                            <div class="review-cons">
+                                                <h5>Wady</h5>
+                                                <ul>
+                                                    {% for con in product.user_review.cons %}
+                                                    <li>{{ con }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                
                                 {% if product.reviews %}
                                     {% for review in product.reviews %}
                                     <div class="review-item">
@@ -252,9 +319,9 @@
                                             <h4>{{ review.title }}</h4>
                                             <p>{{ review.content }}</p>
                                         </div>
-                                        {% if review.pros or review.cons %}
+                                        {% if review.pros|length > 0 or review.cons|length > 0 %}
                                         <div class="review-pros-cons">
-                                            {% if review.pros %}
+                                            {% if review.pros|length > 0 %}
                                             <div class="review-pros">
                                                 <h5>Zalety</h5>
                                                 <ul>
@@ -264,7 +331,7 @@
                                                 </ul>
                                             </div>
                                             {% endif %}
-                                            {% if review.cons %}
+                                            {% if review.cons|length > 0 %}
                                             <div class="review-cons">
                                                 <h5>Wady</h5>
                                                 <ul>
@@ -278,10 +345,16 @@
                                         {% endif %}
                                         <div class="review-helpful">
                                             <span>Czy ta opinia była pomocna?</span>
-                                            <button class="helpful-btn" data-review-id="{{ review.id }}" data-helpful="yes">
+                                            <button class="helpful-btn" 
+                                                    data-review-id="{{ review.id }}" 
+                                                    data-helpful="yes"
+                                                    data-from-db="{{ review.is_from_db|default(false)|string }}">
                                                 <i class="fas fa-thumbs-up"></i> Tak <span>({{ review.helpful_yes }})</span>
                                             </button>
-                                            <button class="helpful-btn" data-review-id="{{ review.id }}" data-helpful="no">
+                                            <button class="helpful-btn" 
+                                                    data-review-id="{{ review.id }}" 
+                                                    data-helpful="no"
+                                                    data-from-db="{{ review.is_from_db|default(false)|string }}">
                                                 <i class="fas fa-thumbs-down"></i> Nie <span>({{ review.helpful_no }})</span>
                                             </button>
                                         </div>
@@ -431,5 +504,6 @@
 
     <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/reviews.js') }}"></script>
 </body>
 </html>

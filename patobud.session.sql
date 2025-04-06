@@ -178,3 +178,13 @@ VALUES
 
 --@block
 ALTER TABLE `orders` MODIFY COLUMN `status` ENUM('pending', 'completed', 'canceled', 'cart') NOT NULL;
+
+--@block
+ALTER TABLE reviews
+ADD COLUMN title VARCHAR(255),
+ADD COLUMN content TEXT,
+ADD COLUMN pros TEXT,
+ADD COLUMN cons TEXT,
+ADD COLUMN helpful_yes INT DEFAULT 0,
+ADD COLUMN helpful_no INT DEFAULT 0,
+ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP;

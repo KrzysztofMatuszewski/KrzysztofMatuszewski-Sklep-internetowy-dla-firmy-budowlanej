@@ -1,12 +1,14 @@
-<!-- templates/categories.html -->
+<!-- templates/user_panel/base.html -->
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kategorie - BudowMax</title>
+    <title>{% block title %}Panel Użytkownika - BudowMax{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_panel.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Header z nawigacją -->
@@ -39,8 +41,9 @@
             <nav>
                 <ul>
                     <li><a href="{{ url_for('index') }}">Strona główna</a></li>
-                    <li><a href="{{ url_for('categories') }}" class="active">Kategorie</a></li>
+                    <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
                     <li><a href="#">Promocje</a></li>
+                    <li><a href="#">Bestsellery</a></li>
                     <li><a href="#">O nas</a></li>
                     <li><a href="#">Kontakt</a></li>
                 </ul>
@@ -51,61 +54,66 @@
         </div>
     </header>
 
-    <!-- Ścieżka -->
-    <section class="breadcrumb">
+    <div class="user-panel-container">
         <div class="container">
-            <ul>
-                <li><a href="{{ url_for('index') }}">Strona główna</a></li>
-                <li>Kategorie</li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Kategorie -->
-    <section class="categories-page">
-        <div class="container">
-            <div class="section-header">
-                <h1>Kategorie produktów</h1>
-                <p>Wybierz interesującą Cię kategorię</p>
-            </div>
-
-            <div class="main-categories">
-                {% for parent_category in parent_categories %}
-                <div class="parent-category">
-                    <div class="parent-category-header">
-                        <h2>{{ parent_category.name }}</h2>
-                        <p>{{ parent_category.description }}</p>
+            <div class="user-panel">
+                <div class="user-panel-sidebar">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-name">{{ current_user.username }}</div>
                     </div>
-                    <div class="subcategories-grid">
-                        {% if parent_category.subcategories %}
-                            {% for subcategory in parent_category.subcategories %}
-                            <div class="category-card">
-                                <a href="{{ url_for('category', category_id=subcategory.id) }}">
-                                    <div class="category-image">
-                                        <img src="{{ subcategory.image_url }}" alt="{{ subcategory.name }}">
-                                    </div>
-                                    <h3>{{ subcategory.name }}</h3>
-                                    <p>{{ subcategory.product_count }} produktów</p>
+                    <nav class="user-navigation">
+                        <ul>
+                            <li {% if request.endpoint == 'user_panel' %}class="active"{% endif %}>
+                                <a href="{{ url_for('user_panel') }}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
                                 </a>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="category-card">
-                                <a href="{{ url_for('category', category_id=parent_category.id) }}">
-                                    <div class="category-image">
-                                        <img src="{{ parent_category.image_url }}" alt="{{ parent_category.name }}">
-                                    </div>
-                                    <h3>Wszystkie produkty</h3>
-                                    <p>{{ parent_category.product_count }} produktów</p>
+                            </li>
+                            <li {% if request.endpoint == 'user_profile' %}class="active"{% endif %}>
+                                <a href="{{ url_for('user_profile') }}">
+                                    <i class="fas fa-user-edit"></i> Mój profil
                                 </a>
+                            </li>
+                            <li {% if request.endpoint == 'user_orders' %}class="active"{% endif %}>
+                                <a href="{{ url_for('user_orders') }}">
+                                    <i class="fas fa-clipboard-list"></i> Historia zamówień
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('logout') }}" class="logout-link">
+                                    <i class="fas fa-sign-out-alt"></i> Wyloguj się
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="user-panel-content">
+                    {% with messages = get_flashed_messages() %}
+                      {% if messages %}
+                        <div class="flash-messages">
+                          {% for message in messages %}
+                            <div class="flash-message">
+                              <i class="fas fa-info-circle"></i> {{ message }}
+                              <button class="close-flash"><i class="fas fa-times"></i></button>
                             </div>
-                        {% endif %}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    {% endwith %}
+                    
+                    <div class="content-header">
+                        <h2>{% block content_title %}Panel Użytkownika{% endblock %}</h2>
+                    </div>
+                    
+                    <div class="content-body">
+                        {% block content %}{% endblock %}
                     </div>
                 </div>
-                {% endfor %}
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- Stopka -->
     <footer>
@@ -121,6 +129,7 @@
                         <li><a href="{{ url_for('index') }}">Strona główna</a></li>
                         <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
                         <li><a href="#">Promocje</a></li>
+                        <li><a href="#">Bestsellery</a></li>
                         <li><a href="#">O nas</a></li>
                         <li><a href="#">Kontakt</a></li>
                     </ul>
@@ -162,5 +171,23 @@
 
     <!-- JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/user_panel.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+    
+    <script>
+        // Obsługa zamykania powiadomień flash
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeButtons = document.querySelectorAll('.close-flash');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const flashMessage = this.parentElement;
+                    flashMessage.style.opacity = '0';
+                    setTimeout(() => {
+                        flashMessage.style.display = 'none';
+                    }, 300);
+                });
+            });
+        });
+    </script>
 </body>
 </html>

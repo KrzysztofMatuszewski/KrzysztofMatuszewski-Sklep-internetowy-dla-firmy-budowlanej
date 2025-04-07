@@ -1,0 +1,159 @@
+<!-- templates/user_panel/profile.html -->
+{% extends 'user_panel/base.html' %}
+
+{% block title %}Mój profil - Panel Użytkownika - BudowMax{% endblock %}
+
+{% block content_title %}Mój profil{% endblock %}
+
+{% block content %}
+<div class="profile-wrapper">
+    <div class="profile-section">
+        <div class="section-header">
+            <h3><i class="fas fa-user-edit"></i> Edycja danych</h3>
+        </div>
+        
+        <form action="{{ url_for('update_profile') }}" method="POST" class="profile-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">Nazwa użytkownika</label>
+                    <input type="text" id="username" name="username" value="{{ user.username }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Adres email</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h4>Zmiana hasła</h4>
+                <p class="form-info">Wypełnij poniższe pola tylko jeśli chcesz zmienić hasło.</p>
+                
+                <div class="form-group">
+                    <label for="current_password">Aktualne hasło</label>
+                    <input type="password" id="current_password" name="current_password">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="new_password">Nowe hasło</label>
+                        <input type="password" id="new_password" name="new_password" minlength="6">
+                        <div class="form-hint">Minimum 6 znaków</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm_password">Powtórz nowe hasło</label>
+                        <input type="password" id="confirm_password" name="confirm_password">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+                <a href="{{ url_for('user_panel') }}" class="btn btn-secondary">Anuluj</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="profile-section">
+        <div class="section-header">
+            <h3><i class="fas fa-shield-alt"></i> Bezpieczeństwo konta</h3>
+        </div>
+        
+        <div class="security-status">
+            <div class="security-item">
+                <div class="security-label">
+                    <i class="fas fa-envelope"></i> Status weryfikacji email
+                </div>
+                <div class="security-value">
+                    {% if user.isverified %}
+                        <span class="status verified"><i class="fas fa-check-circle"></i> Zweryfikowany</span>
+                    {% else %}
+                        <span class="status unverified"><i class="fas fa-exclamation-circle"></i> Niezweryfikowany</span>
+                        <button class="btn btn-sm btn-outline">Wyślij link weryfikacyjny</button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="security-item">
+                <div class="security-label">
+                    <i class="fas fa-key"></i> Hasło
+                </div>
+                <div class="security-value">
+                    <span class="status">Ostatnia zmiana: nigdy</span>
+                </div>
+            </div>
+            
+            <div class="security-item">
+                <div class="security-label">
+                    <i class="fas fa-sign-in-alt"></i> Ostatnie logowanie
+                </div>
+                <div class="security-value">
+                    <span class="status">Dzisiaj, 12:34</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-section">
+        <div class="section-header">
+            <h3><i class="fas fa-map-marker-alt"></i> Adresy dostawy</h3>
+            <button class="btn btn-sm btn-outline disabled">Dodaj adres</button>
+        </div>
+        
+        <div class="addresses-list">
+            <div class="no-addresses">
+                <p>Nie masz jeszcze zapisanych adresów dostawy.</p>
+                <p class="muted">Adresy dostawy będą zapisywane automatycznie podczas składania zamówień.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="delete-account-section">
+    <button class="btn btn-danger disabled">Usuń konto</button>
+    <p class="warning-text">Usunięcie konta spowoduje trwałe usunięcie wszystkich Twoich danych z naszego systemu.</p>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Walidacja formularza
+        const form = document.querySelector('.profile-form');
+        const newPassword = document.getElementById('new_password');
+        const confirmPassword = document.getElementById('confirm_password');
+        const currentPassword = document.getElementById('current_password');
+        
+        form.addEventListener('submit', function(e) {
+            // Sprawdź czy nowe hasło i potwierdzenie są zgodne
+            if (newPassword.value || confirmPassword.value) {
+                if (newPassword.value !== confirmPassword.value) {
+                    e.preventDefault();
+                    alert('Nowe hasło i potwierdzenie nie są zgodne.');
+                    return false;
+                }
+                
+                // Sprawdź czy podano aktualne hasło
+                if (!currentPassword.value) {
+                    e.preventDefault();
+                    alert('Musisz podać aktualne hasło, aby zmienić hasło.');
+                    return false;
+                }
+            }
+            
+            // Sprawdź czy aktualne hasło jest podane, jeśli zmieniono email lub nazwę użytkownika
+            const username = document.getElementById('username');
+            const email = document.getElementById('email');
+            
+            if ((username.value !== '{{ user.username }}' || email.value !== '{{ user.email }}') && !currentPassword.value) {
+                e.preventDefault();
+                alert('Musisz podać aktualne hasło, aby zmienić nazwę użytkownika lub email.');
+                return false;
+            }
+            
+            return true;
+        });
+    });
+</script>
+{% endblock %}

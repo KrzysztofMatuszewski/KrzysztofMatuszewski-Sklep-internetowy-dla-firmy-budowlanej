@@ -1489,6 +1489,155 @@ def delete_review(review_id):
             'success': False,
             'message': 'Wystąpił błąd podczas usuwania oceny'
         })
+    
+@app.route('/user_panel')
+@login_required
+def user_panel():
+    """Główna strona panelu użytkownika"""
+    user = User.query.get(current_user.id)
+    
+    # Pobierz ostatnie 5 zamówień użytkownika
+    recent_orders = Order.query.filter(
+        Order.userId == current_user.id,
+        Order.status != 'cart'
+    ).order_by(Order.createdAt.desc()).limit(5).all()
+    
+    # Przygotuj listę ostatnich zamówień z dodatkowymi informacjami
+    recent_orders_list = []
+    for order in recent_orders:
+        # Pobierz liczbę produktów w zamówieniu
+        items_count = db.session.query(func.sum(OrderItem.quantity)).filter(
+            OrderItem.orderId == order.id
+        ).scalar() or 0
+        
+        order_dict = {
+            'id': order.id,
+            'date': order.createdAt,
+            'status': order.status,
+            'total_price': float(order.totalPrice),
+            'items_count': items_count
+        }
+        recent_orders_list.append(order_dict)
+    
+    return render_template('user_panel/dashboard.html', 
+                          user=user, 
+                          recent_orders=recent_orders_list)
+
+@app.route('/user_panel/profile')
+@login_required
+def user_profile():
+    """Strona profilu użytkownika z danymi osobowymi"""
+    user = User.query.get(current_user.id)
+    return render_template('user_panel/profile.html', user=user)
+
+@app.route('/user_panel/update_profile', methods=['POST'])
+@login_required
+def update_profile():
+    """Aktualizacja danych profilu użytkownika"""
+    try:
+        user = User.query.get(current_user.id)
+        
+        # Pobierz dane z formularza
+        username = request.form.get('username')
+        email = request.form.get('email')
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # Walidacja danych
+        if username and username != user.username:
+            # Sprawdź czy nowa nazwa użytkownika jest już zajęta
+            existing_user = User.query.filter(User.username == username, User.id != user.id).first()
+            if existing_user:
+                flash('Ta nazwa użytkownika jest już zajęta.')
+                return redirect(url_for('user_profile'))
+            user.username = username
+        
+        if email and email != user.email:
+            # Sprawdź czy nowy email jest już zajęty
+            existing_email = User.query.filter(User.email == email, User.id != user.id).first()
+            if existing_email:
+                flash('Ten adres email jest już zajęty.')
+                return redirect(url_for('user_profile'))
+            user.email = email
+        
+        # Jeśli podano aktualne hasło, zweryfikuj je i zmień na nowe
+        if current_password:
+            if not check_password_hash(user.password, current_password):
+                flash('Aktualne hasło jest nieprawidłowe.')
+                return redirect(url_for('user_profile'))
+            
+            # Jeśli podano nowe hasło, zweryfikuj je i zmień
+            if new_password:
+                if not confirm_password or new_password != confirm_password:
+                    flash('Nowe hasło i potwierdzenie nie są zgodne.')
+                    return redirect(url_for('user_profile'))
+                
+                if len(new_password) < 6:
+                    flash('Nowe hasło musi mieć co najmniej 6 znaków.')
+                    return redirect(url_for('user_profile'))
+                
+                # Zmień hasło
+                user.password = generate_password_hash(new_password)
+        
+        # Zapisz zmiany w bazie danych
+        db.session.commit()
+        
+        flash('Dane profilu zostały zaktualizowane.')
+        return redirect(url_for('user_profile'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Wystąpił błąd podczas aktualizacji profilu: {str(e)}')
+        return redirect(url_for('user_profile'))
+
+@app.route('/user_panel/orders')
+@login_required
+def user_orders():
+    """Strona historii zamówień użytkownika"""
+    # Pobierz wszystkie zamówienia użytkownika oprócz koszyków
+    orders = Order.query.filter(
+        Order.userId == current_user.id,
+        Order.status != 'cart'
+    ).order_by(Order.createdAt.desc()).all()
+    
+    # Przygotuj listę zamówień z dodatkowymi informacjami
+    order_list = []
+    for order in orders:
+        # Pobierz liczbę produktów w zamówieniu
+        items_count = db.session.query(func.sum(OrderItem.quantity)).filter(
+            OrderItem.orderId == order.id
+        ).scalar() or 0
+        
+        # Pobierz kilka produktów z zamówienia (np. pierwsze 3)
+        order_items = OrderItem.query.filter_by(orderId=order.id).limit(3).all()
+        products = []
+        
+        for item in order_items:
+            product = Product.query.get(item.productId)
+            if product:
+                products.append({
+                    'id': product.id,
+                    'name': product.name,
+                    'quantity': item.quantity,
+                    'price': float(item.sellPrice)
+                })
+        
+        # Sprawdź, czy zamówienie ma więcej niż 3 produkty
+        has_more_products = OrderItem.query.filter_by(orderId=order.id).count() > 3
+        
+        order_dict = {
+            'id': order.id,
+            'date': order.createdAt,
+            'status': order.status,
+            'total_price': float(order.totalPrice),
+            'items_count': items_count,
+            'products': products,
+            'has_more_products': has_more_products
+        }
+        order_list.append(order_dict)
+    
+    return render_template('user_panel/orders.html', orders=order_list)
 
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)

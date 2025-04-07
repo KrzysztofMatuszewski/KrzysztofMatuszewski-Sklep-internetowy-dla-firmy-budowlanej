@@ -1,0 +1,122 @@
+<!-- templates/user_panel/dashboard.html -->
+{% extends 'user_panel/base.html' %}
+
+{% block title %}Dashboard - Panel Użytkownika - BudowMax{% endblock %}
+
+{% block content_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <div class="dashboard-section">
+        <div class="dashboard-welcome">
+            <h3>Witaj, {{ user.username }}!</h3>
+            <p>Witamy w Twoim panelu użytkownika. Tutaj możesz zarządzać swoim kontem i przeglądać historię zamówień.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3><i class="fas fa-user"></i> Twoje dane</h3>
+            <a href="{{ url_for('user_profile') }}" class="btn btn-sm">Edytuj dane</a>
+        </div>
+        <div class="user-details">
+            <div class="detail-group">
+                <span class="detail-label">Nazwa użytkownika:</span>
+                <span class="detail-value">{{ user.username }}</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">{{ user.email }}</span>
+            </div>
+            <div class="detail-group">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value">
+                    {% if user.isverified %}
+                        <span class="status verified">Zweryfikowany</span>
+                    {% else %}
+                        <span class="status unverified">Niezweryfikowany</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3><i class="fas fa-clipboard-list"></i> Ostatnie zamówienia</h3>
+            <a href="{{ url_for('user_orders') }}" class="btn btn-sm">Zobacz wszystkie</a>
+        </div>
+        
+        {% if recent_orders %}
+            <div class="orders-table-responsive">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Nr zamówienia</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Wartość</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.date.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>
+                                <span class="order-status {{ order.status }}">
+                                    {% if order.status == 'pending' %}
+                                        Oczekujące
+                                    {% elif order.status == 'completed' %}
+                                        Zrealizowane
+                                    {% elif order.status == 'canceled' %}
+                                        Anulowane
+                                    {% else %}
+                                        {{ order.status }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>{{ order.total_price }} zł</td>
+                            <td>
+                                <a href="{{ url_for('order_details', order_id=order.id) }}" class="btn btn-sm">Szczegóły</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-orders">
+                <p>Nie masz jeszcze żadnych zamówień.</p>
+                <a href="{{ url_for('categories') }}" class="btn btn-primary">Zacznij zakupy</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="dashboard-section">
+        <div class="quick-links">
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-shopping-cart"></i></div>
+                <h4>Koszyk</h4>
+                <p>Sprawdź zawartość swojego koszyka</p>
+                <a href="{{ url_for('cart') }}" class="btn btn-sm btn-block">Przejdź do koszyka</a>
+            </div>
+            
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-tags"></i></div>
+                <h4>Promocje</h4>
+                <p>Sprawdź aktualne promocje</p>
+                <a href="#" class="btn btn-sm btn-block">Zobacz promocje</a>
+            </div>
+            
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-star"></i></div>
+                <h4>Bestsellery</h4>
+                <p>Sprawdź najpopularniejsze produkty</p>
+                <a href="#" class="btn btn-sm btn-block">Zobacz bestsellery</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

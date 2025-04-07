@@ -25,7 +25,7 @@
                 </div>
                 <div class="header-icons">
                     {% if current_user.is_authenticated %}
-                        <a href="#" class="icon-link"><i class="fas fa-user"></i> {{ current_user.username }}</a>
+                        <a href="{{ url_for('user_panel') }}" class="icon-link"><i class="fas fa-user"></i> {{ current_user.username }}</a>
                         <a href="{{ url_for('logout') }}" class="icon-link"><i class="fas fa-sign-out-alt"></i></a>
                     {% else %}
                         <a href="{{ url_for('login') }}" class="icon-link"><i class="fas fa-user"></i></a>

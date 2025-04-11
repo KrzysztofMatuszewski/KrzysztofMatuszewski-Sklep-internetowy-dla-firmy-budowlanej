@@ -1,0 +1,135 @@
+<!-- templates/reviews_partial.html -->
+<div class="product-reviews">
+    <div class="reviews-summary">
+        <div class="reviews-average">
+            <div class="average-rating">{{ product.rating }}</div>
+            <div class="average-stars">
+                {% for i in range(5) %}
+                    {% if i < product.rating|int %}
+                        <i class="fas fa-star"></i>
+                    {% elif i < product.rating and i == product.rating|int %}
+                        <i class="fas fa-star-half-alt"></i>
+                    {% else %}
+                        <i class="far fa-star"></i>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="reviews-count">{{ product.reviews_count }} ocen</div>
+        </div>
+        <div class="reviews-bars">
+            {% for i in range(5, 0, -1) %}
+            <div class="rating-bar">
+                <div class="rating-label">{{ i }} <i class="fas fa-star"></i></div>
+                <div class="rating-progress">
+                    <div class="rating-progress-bar" style="width: {{ product.rating_distribution.get(i, 0) }}%"></div>
+                </div>
+                <div class="rating-count">{{ product.ratings_count.get(i, 0) }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="reviews-add">
+        {% if current_user.is_authenticated %}
+            {% if not product.has_reviewed %}
+                <button class="btn btn-primary" id="write-review-btn">Napisz opinię</button>
+            {% endif %}
+        {% else %}
+            <div class="review-login-info">
+                <p>Tylko zalogowani klienci mogą dodać opinię.</p>
+                <a href="{{ url_for('login') }}?next={{ url_for('product', product_id=product.id) }}" class="btn btn-primary">Zaloguj się</a>
+            </div>
+        {% endif %}
+    </div>
+    <div class="reviews-list">
+        {% if product.user_review %}
+            <div class="user-review">
+                <div class="user-review-header">
+                    <h4 class="user-review-title">Moja opinia</h4>
+                    <div class="user-review-actions">
+                        <button class="edit-review-btn" 
+                                data-review-id="{{ product.user_review.id }}" 
+                                data-review-rating="{{ product.user_review.rating }}"
+                                data-review-title="{{ product.user_review.title }}"
+                                data-review-content="{{ product.user_review.content }}">
+                            <i class="fas fa-edit"></i> Zmień
+                        </button>
+                        <button class="delete-review-btn" 
+                                data-review-id="{{ product.user_review.id }}" 
+                                data-product-id="{{ product.id }}">
+                            <i class="fas fa-trash"></i> Usuń
+                        </button>
+                    </div>
+                </div>
+                <div class="user-review-content">
+                    <div class="user-review-rating">
+                        {% for i in range(5) %}
+                            {% if i < product.user_review.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="user-review-date">
+                        {{ product.user_review.date.strftime('%d.%m.%Y') }}
+                    </div>
+                </div>
+                <h4>{{ product.user_review.title }}</h4>
+                <p>{{ product.user_review.content }}</p>
+            </div>
+        {% endif %}
+        
+        {% if product.reviews %}
+            {% for review in product.reviews %}
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="review-author">{{ review.author }}</div>
+                    <div class="review-date">{{ review.date.strftime('%d.%m.%Y') }}</div>
+                </div>
+                <div class="review-rating">
+                    {% for i in range(5) %}
+                        {% if i < review.rating %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="review-content">
+                    <h4>{{ review.title }}</h4>
+                    <p>{{ review.content }}</p>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <!-- Paginacja opinii -->
+            {% if reviews_pagination.pages > 1 %}
+            <div class="pagination">
+                {% if reviews_pagination.has_prev %}
+                <a href="{{ url_for('product', product_id=product.id, reviews_page=reviews_pagination.prev_page) }}#reviews" class="pagination-prev"><i class="fas fa-angle-left"></i></a>
+                {% endif %}
+                
+                {% for page in reviews_pagination.iter_pages() %}
+                    {% if page %}
+                        {% if page == reviews_pagination.page %}
+                        <span class="current-page">{{ page }}</span>
+                        {% else %}
+                        <a href="{{ url_for('product', product_id=product.id, reviews_page=page) }}#reviews">{{ page }}</a>
+                        {% endif %}
+                    {% else %}
+                        <span class="pagination-ellipsis">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                {% if reviews_pagination.has_next %}
+                <a href="{{ url_for('product', product_id=product.id, reviews_page=reviews_pagination.next_page) }}#reviews" class="pagination-next"><i class="fas fa-angle-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+        <div class="no-reviews">
+            <p>Ten produkt nie ma jeszcze opinii. Bądź pierwszy i dodaj swoją opinię!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>

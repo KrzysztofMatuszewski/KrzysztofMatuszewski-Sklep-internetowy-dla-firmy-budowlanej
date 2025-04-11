@@ -188,3 +188,14 @@ ADD COLUMN cons TEXT,
 ADD COLUMN helpful_yes INT DEFAULT 0,
 ADD COLUMN helpful_no INT DEFAULT 0,
 ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP;
+
+--@block
+ALTER TABLE reviews
+DROP COLUMN pros,
+DROP COLUMN cons,
+DROP COLUMN helpful_yes,
+DROP COLUMN helpful_no;
+
+--@block
+SELECT * from reviews;
+

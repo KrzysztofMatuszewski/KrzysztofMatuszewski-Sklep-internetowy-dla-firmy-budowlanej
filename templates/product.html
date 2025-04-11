@@ -243,9 +243,7 @@
                                                         data-review-id="{{ product.user_review.id }}" 
                                                         data-review-rating="{{ product.user_review.rating }}"
                                                         data-review-title="{{ product.user_review.title }}"
-                                                        data-review-content="{{ product.user_review.content }}"
-                                                        data-review-pros="{{ product.user_review.pros|tojson }}"
-                                                        data-review-cons="{{ product.user_review.cons|tojson }}">
+                                                        data-review-content="{{ product.user_review.content }}">
                                                     <i class="fas fa-edit"></i> Zmień
                                                 </button>
                                                 <button class="delete-review-btn" 
@@ -271,31 +269,6 @@
                                         </div>
                                         <h4>{{ product.user_review.title }}</h4>
                                         <p>{{ product.user_review.content }}</p>
-                                        
-                                        {% if product.user_review.pros|length > 0 or product.user_review.cons|length > 0 %}
-                                        <div class="review-pros-cons">
-                                            {% if product.user_review.pros|length > 0 %}
-                                            <div class="review-pros">
-                                                <h5>Zalety</h5>
-                                                <ul>
-                                                    {% for pro in product.user_review.pros %}
-                                                    <li>{{ pro }}</li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </div>
-                                            {% endif %}
-                                            {% if product.user_review.cons|length > 0 %}
-                                            <div class="review-cons">
-                                                <h5>Wady</h5>
-                                                <ul>
-                                                    {% for con in product.user_review.cons %}
-                                                    <li>{{ con }}</li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                        {% endif %}
                                     </div>
                                 {% endif %}
                                 
@@ -319,49 +292,10 @@
                                             <h4>{{ review.title }}</h4>
                                             <p>{{ review.content }}</p>
                                         </div>
-                                        {% if review.pros|length > 0 or review.cons|length > 0 %}
-                                        <div class="review-pros-cons">
-                                            {% if review.pros|length > 0 %}
-                                            <div class="review-pros">
-                                                <h5>Zalety</h5>
-                                                <ul>
-                                                    {% for pro in review.pros %}
-                                                    <li>{{ pro }}</li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </div>
-                                            {% endif %}
-                                            {% if review.cons|length > 0 %}
-                                            <div class="review-cons">
-                                                <h5>Wady</h5>
-                                                <ul>
-                                                    {% for con in review.cons %}
-                                                    <li>{{ con }}</li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                        {% endif %}
-                                        <div class="review-helpful">
-                                            <span>Czy ta opinia była pomocna?</span>
-                                            <button class="helpful-btn" 
-                                                    data-review-id="{{ review.id }}" 
-                                                    data-helpful="yes"
-                                                    data-from-db="{{ review.is_from_db|default(false)|string }}">
-                                                <i class="fas fa-thumbs-up"></i> Tak <span>({{ review.helpful_yes }})</span>
-                                            </button>
-                                            <button class="helpful-btn" 
-                                                    data-review-id="{{ review.id }}" 
-                                                    data-helpful="no"
-                                                    data-from-db="{{ review.is_from_db|default(false)|string }}">
-                                                <i class="fas fa-thumbs-down"></i> Nie <span>({{ review.helpful_no }})</span>
-                                            </button>
-                                        </div>
                                     </div>
                                     {% endfor %}
                                     
-                                    <!-- Paginacja opinii -->
+                                    <!-- Paginacja dla recenzji -->
                                     {% if reviews_pagination.pages > 1 %}
                                     <div class="pagination">
                                         {% if reviews_pagination.has_prev %}

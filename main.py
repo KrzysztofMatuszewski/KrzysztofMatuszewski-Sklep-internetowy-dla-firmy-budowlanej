@@ -88,12 +88,8 @@ class Review(db.Model):
     userId = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     productId = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
-    title = db.Column(db.String(255), nullable=True)  # Tytuł recenzji
-    content = db.Column(db.Text, nullable=True)  # Treść recenzji
-    pros = db.Column(db.Text, nullable=True)  # Zalety jako JSON
-    cons = db.Column(db.Text, nullable=True)  # Wady jako JSON
-    helpful_yes = db.Column(db.Integer, default=0)  # Liczba "Tak" dla "Czy pomocna?"
-    helpful_no = db.Column(db.Integer, default=0)  # Liczba "Nie" dla "Czy pomocna?"
+    title = db.Column(db.String(255), nullable=True)
+    content = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Data utworzenia
 
 class ProductImage(db.Model):
@@ -223,7 +219,7 @@ def get_product_details(product_id):
             
         user = User.query.get(review.userId)
         
-        # Przygotuj słownik z recenzją (bez przykładowej treści)
+        # Przygotuj słownik z recenzją
         review_dict = {
             'id': review.id,
             'author': user.username if user else 'Anonim',
@@ -231,10 +227,6 @@ def get_product_details(product_id):
             'rating': review.rating,
             'title': review.title or f'Recenzja produktu {review.rating}/5',
             'content': review.content or '',
-            'pros': json.loads(review.pros or '[]'),
-            'cons': json.loads(review.cons or '[]'),
-            'helpful_yes': review.helpful_yes or 0,
-            'helpful_no': review.helpful_no or 0,
             'is_from_db': True
         }
         
@@ -251,10 +243,6 @@ def get_product_details(product_id):
             'rating': user_review.rating,
             'title': user_review.title or f'Twoja ocena produktu',
             'content': user_review.content or '',
-            'pros': json.loads(user_review.pros or '[]'),
-            'cons': json.loads(user_review.cons or '[]'),
-            'helpful_yes': user_review.helpful_yes or 0,
-            'helpful_no': user_review.helpful_no or 0,
             'is_user_review': True
         }
     
@@ -1308,8 +1296,6 @@ def add_review(product_id):
         rating = data.get('rating')
         title = data.get('title', f'Recenzja produktu {rating}/5')
         content = data.get('content', '')
-        pros = data.get('pros', '[]')
-        cons = data.get('cons', '[]')
         
         # Walidacja oceny
         if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
@@ -1326,10 +1312,6 @@ def add_review(product_id):
             rating=rating,
             title=title,
             content=content,
-            pros=pros,
-            cons=cons,
-            helpful_yes=0,
-            helpful_no=0,
             created_at=datetime.utcnow()
         )
         
@@ -1338,9 +1320,15 @@ def add_review(product_id):
         db.session.commit()
         print(f"Recenzja dodana pomyślnie: ID={new_review.id}")
         
+        # Pobierz zaktualizowane dane o ocenie produktu
+        avg_rating = db.session.query(func.avg(Review.rating)).filter(Review.productId == product_id).scalar() or 0
+        reviews_count = Review.query.filter_by(productId=product_id).count()
+        
         return jsonify({
             'success': True,
-            'message': 'Dziękujemy za wystawienie oceny!'
+            'message': 'Dziękujemy za wystawienie oceny!',
+            'avgRating': round(float(avg_rating), 1),
+            'reviewsCount': reviews_count
         })
         
     except Exception as e:
@@ -1360,6 +1348,9 @@ def update_review(review_id):
         # Pobierz ocenę
         review = Review.query.get_or_404(review_id)
         
+        # Pobierz ID produktu dla późniejszej aktualizacji statystyk
+        product_id = review.productId
+        
         # Sprawdź czy ocena należy do zalogowanego użytkownika
         if review.userId != current_user.id:
             return jsonify({
@@ -1372,8 +1363,6 @@ def update_review(review_id):
         rating = data.get('rating')
         title = data.get('title')
         content = data.get('content')
-        pros = data.get('pros')
-        cons = data.get('cons')
         
         # Walidacja oceny
         if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
@@ -1388,17 +1377,19 @@ def update_review(review_id):
             review.title = title
         if content is not None:
             review.content = content
-        if pros is not None:
-            review.pros = pros
-        if cons is not None:
-            review.cons = cons
         
         # Zapisz do bazy danych
         db.session.commit()
         
+        # Pobierz zaktualizowane dane o ocenie produktu
+        avg_rating = db.session.query(func.avg(Review.rating)).filter(Review.productId == product_id).scalar() or 0
+        reviews_count = Review.query.filter_by(productId=product_id).count()
+        
         return jsonify({
             'success': True,
-            'message': 'Ocena została zaktualizowana'
+            'message': 'Ocena została zaktualizowana',
+            'avgRating': round(float(avg_rating), 1),
+            'reviewsCount': reviews_count
         })
         
     except Exception as e:
@@ -1407,6 +1398,46 @@ def update_review(review_id):
         return jsonify({
             'success': False,
             'message': 'Wystąpił błąd podczas aktualizacji oceny'
+        })
+
+@app.route('/delete_review/<int:review_id>', methods=['POST'])
+@login_required
+def delete_review(review_id):
+    try:
+        # Pobierz ocenę
+        review = Review.query.get_or_404(review_id)
+        
+        # Pobierz ID produktu dla późniejszej aktualizacji statystyk
+        product_id = review.productId
+        
+        # Sprawdź czy ocena należy do zalogowanego użytkownika
+        if review.userId != current_user.id:
+            return jsonify({
+                'success': False,
+                'message': 'Nie masz uprawnień do usunięcia tej oceny'
+            })
+        
+        # Usuń ocenę
+        db.session.delete(review)
+        db.session.commit()
+        
+        # Pobierz zaktualizowane dane o ocenie produktu
+        avg_rating = db.session.query(func.avg(Review.rating)).filter(Review.productId == product_id).scalar() or 0
+        reviews_count = Review.query.filter_by(productId=product_id).count()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Ocena została usunięta',
+            'avgRating': round(float(avg_rating), 1) if avg_rating else 0,
+            'reviewsCount': reviews_count
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Błąd podczas usuwania oceny: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Wystąpił błąd podczas usuwania oceny'
         })
 
 # Dodajmy też endpoint do obsługi oceniania pomocności recenzji
@@ -1457,37 +1488,6 @@ def review_helpful(review_id):
         return jsonify({
             'success': False,
             'message': 'Wystąpił błąd podczas oceny przydatności recenzji'
-        })
-
-@app.route('/delete_review/<int:review_id>', methods=['POST'])
-@login_required
-def delete_review(review_id):
-    try:
-        # Pobierz ocenę
-        review = Review.query.get_or_404(review_id)
-        
-        # Sprawdź czy ocena należy do zalogowanego użytkownika
-        if review.userId != current_user.id:
-            return jsonify({
-                'success': False,
-                'message': 'Nie masz uprawnień do usunięcia tej oceny'
-            })
-        
-        # Usuń ocenę
-        db.session.delete(review)
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'message': 'Ocena została usunięta'
-        })
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Błąd podczas usuwania oceny: {e}")
-        return jsonify({
-            'success': False,
-            'message': 'Wystąpił błąd podczas usuwania oceny'
         })
     
 @app.route('/user_panel')
@@ -1639,6 +1639,66 @@ def user_orders():
     
     return render_template('user_panel/orders.html', orders=order_list)
 
+@app.route('/get_product_reviews/<int:product_id>')
+def get_product_reviews(product_id):
+    """Endpoint do pobierania recenzji produktu dla odświeżenia sekcji bez przeładowania całej strony."""
+    # Sprawdź, czy żądanie jest AJAX
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return "Niedozwolony dostęp", 403
+        
+    # Pobierz szczegóły produktu
+    product = get_product_details(product_id)
+    if not product:
+        return "Produkt nie znaleziony", 404
+    
+    # Pobierz stronę opinii z parametrów URL
+    reviews_page = request.args.get('reviews_page', 1, type=int)
+    per_page = 5
+    
+    # Przygotuj paginację dla opinii
+    total_reviews = len(product['reviews'])
+    reviews_start = (reviews_page - 1) * per_page
+    reviews_end = reviews_start + per_page
+    
+    # Utwórz obiekt paginacji dla opinii
+    class ReviewsPagination:
+        def __init__(self, page, per_page, total):
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.pages = (total + per_page - 1) // per_page
+            self.has_prev = page > 1
+            self.has_next = page < self.pages
+            self.prev_page = page - 1 if self.has_prev else None
+            self.next_page = page + 1 if self.has_next else None
+        
+        def iter_pages(self):
+            pages = []
+            for i in range(1, self.pages + 1):
+                if i <= 2 or i >= self.pages - 1 or abs(i - self.page) <= 1:
+                    pages.append(i)
+                elif i == 3 and self.page > 4:
+                    pages.append(None)
+                elif i == self.pages - 2 and self.page < self.pages - 3:
+                    pages.append(None)
+            return pages
+    
+    reviews_pagination = ReviewsPagination(reviews_page, per_page, total_reviews)
+    
+    # Dostosuj listę opinii do bieżącej strony
+    product['reviews'] = product['reviews'][reviews_start:reviews_end]
+    
+    # Renderuj fragment szablonu z recenzjami
+    reviews_html = render_template('reviews_partial.html', 
+                          product=product, 
+                          reviews_pagination=reviews_pagination)
+    
+    # Zwróć dane jako JSON
+    return jsonify({
+        'reviewsHtml': reviews_html,
+        'avgRating': product['rating'],
+        'reviewsCount': product['reviews_count']
+    })
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 

@@ -7,6 +7,26 @@
     <title>Realizacja zamówienia - BudowMax</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Style dla skalowania zdjęcia do ramki */
+        .cart-item-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cart-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        /* Wyśrodkowanie regulaminu */
+        .form-checkbox {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
     <!-- Header z nawigacją -->
@@ -121,11 +141,6 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="notes">Uwagi do zamówienia</label>
-                            <textarea id="notes" name="notes" rows="3"></textarea>
-                        </div>
-                        
                         <div class="form-group form-checkbox">
                             <input type="checkbox" id="terms" name="terms" required>
                             <label for="terms">Zapoznałem się i akceptuję <a href="#">regulamin</a> sklepu</label>
@@ -164,7 +179,13 @@
                             </div>
                             <div class="total-row">
                                 <span>Koszt dostawy:</span>
-                                <span class="total-value">{{ shipping_cost }} zł</span>
+                                <span class="total-value">
+                                    {% if cart_total >= 200 %}
+                                        <span class="old-price">15.00 zł</span> Za darmo
+                                    {% else %}
+                                        {{ shipping_cost }} zł
+                                    {% endif %}
+                                </span>
                             </div>
                             <div class="total-row total-sum">
                                 <span>Do zapłaty:</span>

@@ -983,6 +983,9 @@ def checkout():
         
         if not full_name or len(full_name.strip()) < 3:
             errors.append('Imię i nazwisko jest wymagane (min. 3 znaki)')
+            
+        if not re.match(r'^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]+$', full_name):
+            errors.append('Imię i nazwisko może zawierać tylko litery i myślnik')
         
         if not email or '@' not in email:
             errors.append('Podaj poprawny adres email')
@@ -1240,6 +1243,41 @@ def process_payment(order_id):
         flash('Wystąpił błąd podczas przetwarzania płatności')
         
         return render_template('payment_failed.html', order=order)
+
+# Nowy endpoint do obsługi płatności zamówienia bezpośrednio z panelu użytkownika
+@app.route('/pay_order/<int:order_id>', methods=['POST'])
+@login_required
+def pay_order(order_id):
+    # Pobierz zamówienie
+    order = Order.query.get_or_404(order_id)
+    
+    # Sprawdź, czy zamówienie należy do aktualnego użytkownika
+    if order.userId != current_user.id:
+        flash('Nie masz dostępu do tego zamówienia')
+        return redirect(url_for('user_orders'))
+    
+    # Sprawdź, czy zamówienie ma odpowiedni status
+    if order.status != 'pending':
+        flash('To zamówienie nie oczekuje na płatność')
+        return redirect(url_for('user_orders'))
+    
+    # Symulacja płatności - zawsze udana
+    payment_successful = True
+    
+    if payment_successful:
+        # Płatność udana - zmień status zamówienia na completed
+        order.status = 'completed'
+        
+        # Zapisz zmiany w bazie danych
+        db.session.commit()
+        
+        # Komunikat o sukcesie
+        flash('Twoja płatność została pomyślnie zrealizowana')
+    else:
+        # Płatność nieudana - w tym przypadku nigdy się nie wydarzy
+        flash('Wystąpił błąd podczas przetwarzania płatności')
+    
+    return redirect(url_for('user_orders'))
     
 # Endpoint do ponownej próby płatności
 @app.route('/retry_payment/<int:order_id>', methods=['POST'])

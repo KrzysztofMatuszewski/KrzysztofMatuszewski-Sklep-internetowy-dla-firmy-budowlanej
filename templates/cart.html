@@ -154,7 +154,13 @@
                         </div>
                         <div class="summary-row">
                             <span>Koszt dostawy:</span>
-                            <span class="cart-shipping">{{ shipping_cost }} zł</span>
+                            <span class="cart-shipping">
+                                {% if cart_total >= 200 %}
+                                    <span class="old-price">15.00 zł</span> Za darmo
+                                {% else %}
+                                    {{ shipping_cost }} zł
+                                {% endif %}
+                            </span>
                         </div>
                         <div class="summary-row total">
                             <span>Razem:</span>

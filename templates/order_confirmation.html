@@ -25,7 +25,7 @@
                 </div>
                 <div class="header-icons">
                     {% if current_user.is_authenticated %}
-                        <a href="#" class="icon-link"><i class="fas fa-user"></i> {{ current_user.username }}</a>
+                        <a href="{{ url_for('user_panel') }}" class="icon-link"><i class="fas fa-user"></i> {{ current_user.username }}</a>
                         <a href="{{ url_for('logout') }}" class="icon-link"><i class="fas fa-sign-out-alt"></i></a>
                     {% else %}
                         <a href="{{ url_for('login') }}" class="icon-link"><i class="fas fa-user"></i></a>
@@ -71,6 +71,21 @@
                 <h1>Dziękujemy za złożenie zamówienia</h1>
                 <p>Numer zamówienia: <strong>{{ order.id }}</strong></p>
                 <p>Data zamówienia: {{ order.createdAt.strftime('%d.%m.%Y, %H:%M') }}</p>
+                <div class="order-status">
+                    <p>Status zamówienia: 
+                        <span class="status-badge status-{{ order.status }}">
+                            {% if order.status == 'pending' %}
+                                Oczekujące na płatność
+                            {% elif order.status == 'completed' %}
+                                Zrealizowane
+                            {% elif order.status == 'canceled' %}
+                                Anulowane
+                            {% else %}
+                                {{ order.status }}
+                            {% endif %}
+                        </span>
+                    </p>
+                </div>
             </div>
             
             {% with messages = get_flashed_messages() %}
@@ -86,9 +101,6 @@
             <div class="confirmation-content">
                 <div class="confirmation-summary">
                     <h2>Podsumowanie zamówienia</h2>
-                    <div class="order-status">
-                        <p>Status zamówienia: <span class="status-badge status-{{ order.status }}">{{ order.status }}</span></p>
-                    </div>
                     
                     <div class="order-products">
                         <h3>Zamówione produkty</h3>
@@ -126,8 +138,22 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="3" class="order-sum-label">Razem:</td>
+                                    <td colspan="3" class="order-sum-label">Wartość produktów:</td>
                                     <td class="order-sum-value">{{ order_total }} zł</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="order-sum-label">Koszt dostawy:</td>
+                                    <td class="order-sum-value">
+                                        {% if order_total >= 200 %}
+                                            0 zł
+                                        {% else %}
+                                            {{ shipping_cost }} zł
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="order-sum-label">Razem:</td>
+                                    <td class="order-sum-value">{{ total_with_shipping }} zł</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -137,7 +163,19 @@
                         <div class="order-info-box">
                             <h3>Informacje o płatności</h3>
                             <p>Metoda płatności: <strong>Przelew bankowy</strong></p>
-                            <p>Status płatności: <span class="status-badge status-pending">Oczekująca</span></p>
+                            <p>Status płatności: 
+                                <span class="status-badge status-{{ order.status }}">
+                                    {% if order.status == 'pending' %}
+                                        Oczekująca
+                                    {% elif order.status == 'completed' %}
+                                        Zaksięgowana
+                                    {% elif order.status == 'canceled' %}
+                                        Anulowana
+                                    {% else %}
+                                        {{ order.status }}
+                                    {% endif %}
+                                </span>
+                            </p>
                             <div class="bank-details">
                                 <p>Dane do przelewu:</p>
                                 <p>BudowMax Sp. z o.o.</p>
@@ -153,11 +191,49 @@
                             <p>ul. Przykładowa 123</p>
                             <p>00-000 Warszawa</p>
                         </div>
+                        
+                        <div class="order-info-box">
+                            <h3>Status zamówienia</h3>
+                            <div class="order-timeline">
+                                <div class="timeline-item active">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-date">{{ order.createdAt.strftime('%d.%m.%Y') }}</span>
+                                        <p>Zamówienie złożone</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item {% if order.status != 'pending' %}active{% endif %}">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-date">{% if order.status != 'pending' %}{{ order.createdAt.strftime('%d.%m.%Y') }}{% else %}-{% endif %}</span>
+                                        <p>Płatność zaksięgowana</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item {% if order.status == 'completed' %}active{% endif %}">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-date">{% if order.status == 'completed' %}{{ order.createdAt.strftime('%d.%m.%Y') }}{% else %}-{% endif %}</span>
+                                        <p>Zamówienie wysłane</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item {% if order.status == 'completed' %}active{% endif %}">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-date">{% if order.status == 'completed' %}{{ order.createdAt.strftime('%d.%m.%Y') }}{% else %}-{% endif %}</span>
+                                        <p>Zamówienie zrealizowane</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="confirmation-actions">
-                        <a href="{{ url_for('order_details', order_id=order.id) }}" class="btn btn-primary">Szczegóły zamówienia</a>
-                        <a href="{{ url_for('order_history') }}" class="btn btn-secondary">Historia zamówień</a>
+                        {% if order.status == 'pending' %}
+                            <form action="{{ url_for('pay_order', order_id=order.id) }}" method="POST" style="display: inline-block;">
+                                <button type="submit" class="btn btn-primary">Opłać zamówienie</button>
+                            </form>
+                        {% endif %}
+                        <a href="{{ url_for('user_orders') }}" class="btn btn-primary">Historia zamówień</a>
                         <a href="{{ url_for('index') }}" class="btn btn-outline">Kontynuuj zakupy</a>
                     </div>
                 </div>

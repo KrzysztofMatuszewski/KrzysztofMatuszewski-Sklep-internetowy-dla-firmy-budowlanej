@@ -134,7 +134,13 @@
                             <i class="fas fa-truck"></i>
                             <div class="delivery-info">
                                 <span>Dostawa kurierem</span>
-                                <span class="delivery-cost">{% if product.delivery_cost > 0 %}{{ product.delivery_cost }} zł{% else %}Darmowa dostawa{% endif %}</span>
+                                <span class="delivery-cost">
+                                    {% if product.price >= 200 %}
+                                        <span class="old-price">15.00 zł</span> Za darmo
+                                    {% else %}
+                                        {% if product.delivery_cost > 0 %}{{ product.delivery_cost }} zł{% else %}Darmowa dostawa{% endif %}
+                                    {% endif %}
+                                </span>
                             </div>
                         </div>
                         <div class="delivery-option">

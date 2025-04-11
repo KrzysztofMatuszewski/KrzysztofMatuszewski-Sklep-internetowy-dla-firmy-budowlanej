@@ -30,7 +30,7 @@
                             <span class="value">
                                 <span class="status-badge {{ order.status }}">
                                     {% if order.status == 'pending' %}
-                                        Oczekujące
+                                        Oczekujące na płatność
                                     {% elif order.status == 'completed' %}
                                         Zrealizowane
                                     {% elif order.status == 'canceled' %}
@@ -63,11 +63,31 @@
                     
                     <div class="order-footer">
                         <div class="order-total">
-                            <span class="label">Suma:</span>
+                            <span class="label">Wartość produktów:</span>
                             <span class="value price">{{ order.total_price }} zł</span>
                         </div>
+                        <div class="order-total">
+                            <span class="label">Koszt dostawy:</span>
+                            <span class="value">
+                                {% if order.total_price >= 200 %}
+                                    0 zł
+                                {% else %}
+                                    {{ order.shipping_cost }} zł
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="order-total">
+                            <span class="label">Razem:</span>
+                            <span class="value price">{{ order.total_with_shipping }} zł</span>
+                        </div>
                         <div class="order-actions">
-                            <a href="{{ url_for('order_details', order_id=order.id) }}" class="btn btn-sm">Szczegóły</a>
+                            {% if order.can_pay %}
+                                <form action="{{ url_for('pay_order', order_id=order.id) }}" method="POST" class="inline-form">
+                                    <button type="submit" class="btn btn-primary btn-sm">Opłać</button>
+                                </form>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('order_confirmation', order_id=order.id) }}" class="btn btn-sm">Szczegóły</a>
                             
                             {% if order.status == 'pending' %}
                             <form action="{{ url_for('cancel_order', order_id=order.id) }}" method="POST" class="inline-form" onsubmit="return confirm('Czy na pewno chcesz anulować to zamówienie?');">
@@ -126,4 +146,15 @@
         </div>
     </div>
 </div>
+
+<style>
+    .old-price {
+        text-decoration: line-through;
+        color: #999;
+        margin-right: 5px;
+    }
+    .inline-form {
+        display: inline-block;
+    }
+</style>
 {% endblock %}

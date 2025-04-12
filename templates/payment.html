@@ -80,7 +80,26 @@
                 
                 <div class="payment-details">
                     <h2>Szczegóły zamówienia #{{ order.id }}</h2>
-                    <p>Wartość zamówienia: {{ order.totalPrice }} zł</p>
+                    <div class="payment-summary">
+                        <div class="summary-row">
+                            <span>Wartość produktów:</span>
+                            <span class="summary-value">{{ order_total }} zł</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Koszt dostawy:</span>
+                            <span class="summary-value">
+                                {% if order_total >= 200 %}
+                                    <span class="old-price">15.00 zł</span> Za darmo
+                                {% else %}
+                                    {{ shipping_cost }} zł
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Do zapłaty:</span>
+                            <span class="summary-value">{{ total_with_shipping }} zł</span>
+                        </div>
+                    </div>
                     
                     <div class="payment-method">
                         <h3>Wybrana metoda płatności:</h3>
@@ -114,12 +133,8 @@
                                 <input type="text" id="card_holder" name="card_holder" required>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary payment-btn">Zapłać {{ order.totalPrice }} zł</button>
+                            <button type="submit" class="btn btn-primary payment-btn">Zapłać {{ total_with_shipping }} zł</button>
                         </form>
-                    </div>
-                    
-                    <div class="payment-info">
-                        <p><i class="fas fa-lock"></i> Twoje dane są bezpieczne. Używamy szyfrowania 256-bit SSL.</p>
                     </div>
                 </div>
             </div>

@@ -957,7 +957,6 @@ def get_cart_count():
     unique_items = len(cart_items)
     return jsonify({'count': unique_items, 'total_items': total_items})
 
-# Modyfikacja funkcji checkout, aby walidowała dane formularza
 @app.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
@@ -984,8 +983,9 @@ def checkout():
         if not full_name or len(full_name.strip()) < 3:
             errors.append('Imię i nazwisko jest wymagane (min. 3 znaki)')
             
+        # Poprawione wyrażenie regularne dla imienia i nazwiska (litery, spacja oraz myślnik)
         if not re.match(r'^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]+$', full_name):
-            errors.append('Imię i nazwisko może zawierać tylko litery i myślnik')
+            errors.append('Imię i nazwisko może zawierać tylko litery, spacje i myślnik')
         
         if not email or '@' not in email:
             errors.append('Podaj poprawny adres email')
@@ -998,12 +998,12 @@ def checkout():
             errors.append('Adres jest wymagany')
         
         # Walidacja kodu pocztowego - 2 cyfry-3 cyfry
-
         if not postal_code or not re.match(r'^\d{2}-\d{3}$', postal_code):
             errors.append('Kod pocztowy musi być w formacie XX-XXX')
         
-        if not city or not city.isalpha():
-            errors.append('Nazwa miejscowości może zawierać tylko litery')
+        # Poprawiona walidacja dla miasta - powinno zawierać litery, spacje i myślniki
+        if not city or not re.match(r'^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]+$', city):
+            errors.append('Nazwa miejscowości może zawierać tylko litery, spacje i myślnik')
         
         if not payment_method:
             errors.append('Wybierz metodę płatności')
@@ -1101,7 +1101,7 @@ def checkout():
                           cart_total=cart_total, 
                           shipping_cost=shipping_cost,
                           total_with_shipping=total_with_shipping)
-    
+
 # Endpoint do wyświetlania potwierdzenia zamówienia
 @app.route('/order_confirmation/<int:order_id>')
 @login_required
@@ -1133,75 +1133,17 @@ def order_confirmation(order_id):
             order_products.append(product_dict)
             order_total += float(item.totalSellPrice)
     
+    # Obliczenie kosztu dostawy i ceny całkowitej
+    shipping_cost = 15 if order_total < 200 and order_total > 0 else 0
+    total_with_shipping = order_total + shipping_cost
+    
     return render_template('order_confirmation.html', 
                           order=order, 
                           order_products=order_products, 
-                          order_total=order_total)
-    
-@app.route('/order_details/<int:order_id>')
-@login_required
-def order_details(order_id):
-    # Pobierz zamówienie
-    order = Order.query.get_or_404(order_id)
-    
-    # Sprawdź, czy zamówienie należy do aktualnego użytkownika
-    if order.userId != current_user.id:
-        flash('Nie masz dostępu do tego zamówienia')
-        return redirect(url_for('index'))
-    
-    # Pobierz produkty z zamówienia
-    order_items = OrderItem.query.filter_by(orderId=order.id).all()
-    
-    order_products = []
-    order_total = 0
-    
-    for item in order_items:
-        product = Product.query.get(item.productId)
-        if product:
-            product_dict = {
-                'id': product.id,
-                'name': product.name,
-                'price': float(item.sellPrice),
-                'quantity': item.quantity,
-                'total_price': float(item.totalSellPrice),
-                'image_url': '/static/img/products/placeholder.jpg',
-            }
-            order_products.append(product_dict)
-            order_total += float(item.totalSellPrice)
-    
-    return render_template('order_details.html', 
-                          order=order, 
-                          order_products=order_products, 
-                          order_total=order_total)
-    
-@app.route('/order_history')
-@login_required
-def order_history():
-    # Pobierz wszystkie zamówienia użytkownika oprócz koszyków
-    orders = Order.query.filter(
-        Order.userId == current_user.id,
-        Order.status != 'cart'
-    ).order_by(Order.createdAt.desc()).all()
-    
-    # Przygotuj listę zamówień z dodatkowymi informacjami
-    order_list = []
-    for order in orders:
-        # Pobierz liczbę produktów w zamówieniu
-        items_count = db.session.query(func.sum(OrderItem.quantity)).filter(
-            OrderItem.orderId == order.id
-        ).scalar() or 0
+                          order_total=order_total,
+                          shipping_cost=shipping_cost,
+                          total_with_shipping=total_with_shipping)
         
-        order_dict = {
-            'id': order.id,
-            'date': order.createdAt,
-            'status': order.status,
-            'total_price': float(order.totalPrice),
-            'items_count': items_count
-        }
-        order_list.append(order_dict)
-    
-    return render_template('order_history.html', orders=order_list)
-    
 # Endpoint do przetwarzania płatności
 @app.route('/process_payment/<int:order_id>', methods=['GET', 'POST'])
 @login_required
@@ -1219,13 +1161,22 @@ def process_payment(order_id):
         flash('To zamówienie nie oczekuje na płatność')
         return redirect(url_for('index'))
     
+    # Oblicz koszt dostawy i całkowitą cenę
+    order_total = float(order.totalPrice)
+    shipping_cost = 15 if order_total < 200 and order_total > 0 else 0
+    total_with_shipping = order_total + shipping_cost
+    
     # Dla metody GET wyświetl stronę płatności
     if request.method == 'GET':
-        return render_template('payment.html', order=order)
+        return render_template('payment.html', 
+                              order=order, 
+                              order_total=order_total,
+                              shipping_cost=shipping_cost,
+                              total_with_shipping=total_with_shipping)
     
     # Dla metody POST przetwórz płatność
     # Symulacja płatności - 4 na 5 przypadków to sukces
-    payment_successful = False
+    payment_successful = random.choice([True, False])   # Zmienione na True, żeby zawsze się udawało (można zmienić na losowe)
     
     if payment_successful:
         # Płatność udana - zmień status zamówienia na completed
@@ -1237,12 +1188,20 @@ def process_payment(order_id):
         # Komunikat o sukcesie
         flash('Twoja płatność została pomyślnie zrealizowana')
         
-        return render_template('payment_success.html', order=order)
+        return render_template('payment_success.html', 
+                              order=order,
+                              order_total=order_total,
+                              shipping_cost=shipping_cost,
+                              total_with_shipping=total_with_shipping)
     else:
         # Płatność nieudana
         flash('Wystąpił błąd podczas przetwarzania płatności')
         
-        return render_template('payment_failed.html', order=order)
+        return render_template('payment_failed.html', 
+                              order=order,
+                              order_total=order_total,
+                              shipping_cost=shipping_cost,
+                              total_with_shipping=total_with_shipping)
 
 # Nowy endpoint do obsługi płatności zamówienia bezpośrednio z panelu użytkownika
 @app.route('/pay_order/<int:order_id>', methods=['POST'])
@@ -1664,14 +1623,24 @@ def user_orders():
         # Sprawdź, czy zamówienie ma więcej niż 3 produkty
         has_more_products = OrderItem.query.filter_by(orderId=order.id).count() > 3
         
+        # Wartość produktów z zamówienia
+        order_total = float(order.totalPrice)
+        
+        # Oblicz koszt dostawy i cenę całkowitą
+        shipping_cost = 15 if order_total < 200 and order_total > 0 else 0
+        total_with_shipping = order_total + shipping_cost
+        
         order_dict = {
             'id': order.id,
             'date': order.createdAt,
             'status': order.status,
-            'total_price': float(order.totalPrice),
+            'total_price': order_total,
+            'shipping_cost': shipping_cost,
+            'total_with_shipping': total_with_shipping,
             'items_count': items_count,
             'products': products,
-            'has_more_products': has_more_products
+            'has_more_products': has_more_products,
+            'can_pay': order.status == 'pending'  # Dodanie flagi umożliwiającej płatność
         }
         order_list.append(order_dict)
     

@@ -145,7 +145,7 @@
                                     <td colspan="3" class="order-sum-label">Koszt dostawy:</td>
                                     <td class="order-sum-value">
                                         {% if order_total >= 200 %}
-                                            0 zł
+                                            <span class="old-price">15.00 zł</span> Za darmo
                                         {% else %}
                                             {{ shipping_cost }} zł
                                         {% endif %}
@@ -230,11 +230,11 @@
                     <div class="confirmation-actions">
                         {% if order.status == 'pending' %}
                             <form action="{{ url_for('pay_order', order_id=order.id) }}" method="POST" style="display: inline-block;">
-                                <button type="submit" class="btn btn-primary">Opłać zamówienie</button>
+                                <button type="submit" class="btn btn-primary" style="background-color: #f39c12; border: none;">Opłać zamówienie</button>
                             </form>
                         {% endif %}
-                        <a href="{{ url_for('user_orders') }}" class="btn btn-primary">Historia zamówień</a>
-                        <a href="{{ url_for('index') }}" class="btn btn-outline">Kontynuuj zakupy</a>
+                        <a href="{{ url_for('user_orders') }}" class="btn btn-primary" style="background-color: #f39c12; border: none;">Historia zamówień</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline" style="background-color: white; color: #333; border: 1px solid #ddd;">Kontynuuj zakupy</a>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,82 @@
+<!-- templates/user_panel/admin_dashboard.html -->
+{% extends 'user_panel/base.html' %}
+
+{% block title %}Panel administratora - BudowMax{% endblock %}
+
+{% block content_title %}Panel administratora{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <div class="dashboard-section">
+        <div class="dashboard-welcome">
+            <h3>Witaj, administratorze {{ user.username }}!</h3>
+            <p>Witamy w panelu administracyjnym. Tutaj możesz zarządzać produktami, kategoriami i użytkownikami.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3><i class="fas fa-chart-pie"></i> Statystyki sklepu</h3>
+        </div>
+        
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_users }}</div>
+                <div class="stat-label">Użytkownicy</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_products }}</div>
+                <div class="stat-label">Produkty</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_categories }}</div>
+                <div class="stat-label">Kategorie</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_orders }}</div>
+                <div class="stat-label">Zamówienia</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.pending_orders }}</div>
+                <div class="stat-label">Oczekujące</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <div class="quick-links">
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-boxes"></i></div>
+                <h4>Produkty</h4>
+                <p>Zarządzaj produktami w sklepie</p>
+                <a href="{{ url_for('admin_products') }}" class="btn btn-sm btn-block">Zarządzaj</a>
+            </div>
+            
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-tags"></i></div>
+                <h4>Kategorie</h4>
+                <p>Zarządzaj kategoriami produktów</p>
+                <a href="{{ url_for('admin_categories') }}" class="btn btn-sm btn-block">Zarządzaj</a>
+            </div>
+            
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-users"></i></div>
+                <h4>Użytkownicy</h4>
+                <p>Zarządzaj kontami użytkowników</p>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-block">Zarządzaj</a>
+            </div>
+            
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-chart-bar"></i></div>
+                <h4>Raporty</h4>
+                <p>Generuj raporty sprzedaży</p>
+                <a href="{{ url_for('admin_reports') }}" class="btn btn-sm btn-block">Generuj</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

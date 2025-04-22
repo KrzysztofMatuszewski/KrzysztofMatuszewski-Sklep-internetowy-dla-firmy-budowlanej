@@ -3751,3 +3751,285 @@ nav ul li a.active::after {
     display: block;
     margin-bottom: 5px;
 }
+
+/* Dodaj te style do pliku user_panel.css */
+
+/* Style dla panelu administratora */
+.user-navigation a i.fa-shield-alt {
+    color: #e74c3c;
+}
+
+.user-navigation a i.fa-boxes,
+.user-navigation a i.fa-tags,
+.user-navigation a i.fa-users,
+.user-navigation a i.fa-chart-bar {
+    color: #f39c12;
+}
+
+.user-navigation li.active a i.fa-shield-alt,
+.user-navigation li.active a i.fa-boxes,
+.user-navigation li.active a i.fa-tags,
+.user-navigation li.active a i.fa-users,
+.user-navigation li.active a i.fa-chart-bar {
+    color: #e74c3c;
+}
+
+/* Modal dla dodawania produktów/kategorii */
+.review-modal form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.review-modal form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    resize: vertical;
+}
+
+/* Przycisk do usuwania */
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+/* Style dla statusów */
+.status.verified {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.status.unverified {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Style dla formularzy w panelu administracyjnym */
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* Style dla ikon w kartach */
+.card-icon i.fa-file-invoice-dollar,
+.card-icon i.fa-boxes,
+.card-icon i.fa-users,
+.card-icon i.fa-star {
+    color: white;
+}
+
+/* Dodaj te style do pliku user_panel.css */
+
+/* Style dla rozwijanego menu administratora */
+.user-navigation .has-submenu {
+    position: relative;
+}
+
+.user-navigation .has-submenu > a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.user-navigation .submenu-icon {
+    margin-left: auto;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.user-navigation .has-submenu.open .submenu-icon {
+    transform: rotate(180deg);
+}
+
+.user-navigation .admin-submenu {
+    display: none;  /* Domyślnie ukryte */
+    flex-direction: column;
+    background-color: #f9f9f9;
+    border-left: 3px solid transparent;
+    margin-left: 20px;
+    margin-top: 5px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.user-navigation .admin-submenu li {
+    width: 100%;
+}
+
+.user-navigation .admin-submenu li a {
+    padding: 10px 15px;
+    padding-left: 30px;
+    font-size: 14px;
+}
+
+.user-navigation .admin-submenu li.active a {
+    background-color: #f0f0f0;
+    border-left-color: #e74c3c;
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.user-navigation .has-submenu.open > a {
+    background-color: #f0f0f0;
+}
+
+/* Animacja rozwijania */
+.user-navigation .admin-submenu.show {
+    display: flex;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
+
+/* Responsywność dla rozwijanego menu */
+@media (max-width: 992px) {
+    .user-navigation .admin-submenu {
+        margin-left: 0;
+        border-left: none;
+    }
+    
+    .user-navigation .admin-submenu li a {
+        padding-left: 50px;
+    }
+}
+
+/* Style dla podglądu zamówień użytkownika w panelu administracyjnym */
+.user-info-summary {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.user-info-summary h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.user-info-summary h3 i {
+    margin-right: 10px;
+    color: #e74c3c;
+}
+
+.user-info-summary .user-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.user-info-summary .detail-group {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding: 8px 0;
+}
+
+.user-info-summary .detail-label {
+    width: 150px;
+    font-weight: 600;
+    color: #555;
+}
+
+.user-info-summary .detail-value {
+    flex: 1;
+    color: #333;
+}
+
+/* Style dla przycisków w tabelach administracyjnych */
+.orders-table .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    margin-left: 5px;
+}
+
+.orders-table .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.orders-table td {
+    white-space: nowrap;
+}
+
+.orders-table td .btn {
+    margin-right: 5px;
+}
+
+.orders-table td a.btn {
+    display: inline-block;
+    text-decoration: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    background-color: #f0f0f0;
+    color: #333;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.orders-table td a.btn:hover {
+    background-color: #e0e0e0;
+    border-color: #ccc;
+}
+
+.orders-table td a.btn.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border-color: #6c757d;
+}
+
+.orders-table td a.btn.btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+/* Style dla usuniętych użytkowników */
+.orders-table tr.deleted-user {
+    background-color: #fff3f3;
+}
+
+.orders-table tr.deleted-user td {
+    color: #888;
+}
+
+.orders-table tr.deleted-user .username {
+    text-decoration: line-through;
+}
+
+/* Ukryj przyciski akcji dla usuniętych użytkowników */
+.orders-table tr.deleted-user .btn:not(.btn-sm) {
+    display: none;
+}

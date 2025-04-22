@@ -1,0 +1,123 @@
+<!-- templates/user_panel/admin_users.html -->
+{% extends 'user_panel/base.html' %}
+
+{% block title %}Zarządzanie użytkownikami - Panel administratora - BudowMax{% endblock %}
+
+{% block content_title %}Zarządzanie użytkownikami{% endblock %}
+
+{% block content %}
+<div class="orders-wrapper">
+    <div class="orders-section">
+        <div class="section-header">
+            <h3><i class="fas fa-users"></i> Użytkownicy</h3>
+        </div>
+        
+        {% if users %}
+            <div class="orders-table-responsive">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nazwa użytkownika</th>
+                            <th>Email</th>
+                            <th>Rola</th>
+                            <th>Status</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>#{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.role.name if user.role else 'Brak roli' }}</td>
+                            <td>
+                                {% if user.isverified %}
+                                    <span class="status verified">Zweryfikowany</span>
+                                {% else %}
+                                    <span class="status unverified">Niezweryfikowany</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm" onclick="showEditRoleModal({{ user.id }}, {{ user.roleId }})">Zmień rolę</button>
+                                <a href="{{ url_for('admin_user_orders', user_id=user.id) }}" class="btn btn-sm">Historia zamówień</a>
+                                {% if user.id != current_user.id and user.roleId != 1 %}
+                                <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="POST" class="inline-form" onsubmit="return confirmDelete({{ user.id }}, '{{ user.username }}');">
+                                    <button type="submit" class="btn btn-sm btn-danger">Usuń</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-orders">
+                <p>Nie ma jeszcze żadnych użytkowników.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal zmiany roli -->
+<div id="editRoleModal" class="review-modal" style="display: none;">
+    <div class="review-modal-content">
+        <span class="close-modal" onclick="hideEditRoleModal()">&times;</span>
+        <h2>Zmień rolę użytkownika</h2>
+        
+        <form id="editRoleForm" method="POST">
+            <div class="form-group">
+                <label for="roleId">Wybierz rolę</label>
+                <select id="roleId" name="roleId" required>
+                    {% for role in roles %}
+                        <option value="{{ role.id }}">{{ role.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="review-buttons">
+                <button type="submit" class="btn btn-primary">Zapisz zmianę</button>
+                <button type="button" class="btn btn-secondary" onclick="hideEditRoleModal()">Anuluj</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showEditRoleModal(userId, currentRoleId) {
+    const modal = document.getElementById('editRoleModal');
+    const form = document.getElementById('editRoleForm');
+    const roleSelect = document.getElementById('roleId');
+    
+    // Ustaw akcję formularza
+    form.action = '{{ url_for("admin_edit_user_role", user_id=0) }}'.replace('0', userId);
+    
+    // Ustaw obecną rolę
+    roleSelect.value = currentRoleId;
+    
+    modal.style.display = 'flex';
+    setTimeout(() => modal.style.opacity = '1', 10);
+}
+
+function hideEditRoleModal() {
+    const modal = document.getElementById('editRoleModal');
+    modal.style.opacity = '0';
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+// Zamknij modal po kliknięciu poza jego zawartością
+window.onclick = function(event) {
+    const modal = document.getElementById('editRoleModal');
+    if (event.target == modal) {
+        hideEditRoleModal();
+    }
+}
+
+// Funkcja potwierdzenia usunięcia użytkownika
+function confirmDelete(userId, username) {
+    return confirm(`Czy na pewno chcesz usunąć użytkownika "${username}" (ID: ${userId})?\n\nSpowoduje to zmianę danych użytkownika na "deleted" oraz adresu email na "deleted_${userId}@deleted.com". Historia zamówień zostanie zachowana.`);
+}
+</script>
+{% endblock %}

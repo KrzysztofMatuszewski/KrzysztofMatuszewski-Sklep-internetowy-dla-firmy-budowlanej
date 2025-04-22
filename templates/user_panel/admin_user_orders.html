@@ -1,0 +1,161 @@
+<!-- templates/user_panel/admin_user_orders.html -->
+{% extends 'user_panel/base.html' %}
+
+{% block title %}Historia zamówień użytkownika {{ user.username }} - Panel administratora - BudowMax{% endblock %}
+
+{% block content_title %}Historia zamówień użytkownika: {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="orders-wrapper">
+    <div class="dashboard-section">
+        <div class="user-info-summary">
+            <h3><i class="fas fa-user"></i> Informacje o użytkowniku</h3>
+            <div class="user-details">
+                <div class="detail-group">
+                    <span class="detail-label">ID:</span>
+                    <span class="detail-value">#{{ user.id }}</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Nazwa użytkownika:</span>
+                    <span class="detail-value">{{ user.username }}</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value">{{ user.email }}</span>
+                </div>
+                <div class="detail-group">
+                    <span class="detail-label">Rola:</span>
+                    <span class="detail-value">{{ user.role.name if user.role else 'Brak roli' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="orders-section">
+        <div class="section-header">
+            <h3><i class="fas fa-clipboard-list"></i> Lista zamówień</h3>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-sm">Powrót do listy użytkowników</a>
+        </div>
+        
+        {% if orders %}
+            <div class="orders-list">
+                {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-number">
+                            <span class="label">Nr zamówienia:</span>
+                            <span class="value">#{{ order.id }}</span>
+                        </div>
+                        <div class="order-date">
+                            <span class="label">Data:</span>
+                            <span class="value">{{ order.date.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        <div class="order-status">
+                            <span class="label">Status:</span>
+                            <span class="value">
+                                <span class="status-badge {{ order.status }}">
+                                    {% if order.status == 'pending' %}
+                                        Oczekujące na płatność
+                                    {% elif order.status == 'completed' %}
+                                        Zrealizowane
+                                    {% elif order.status == 'canceled' %}
+                                        Anulowane
+                                    {% else %}
+                                        {{ order.status }}
+                                    {% endif %}
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-products">
+                        {% for product in order.products %}
+                        <div class="order-product">
+                            <div class="product-name">{{ product.name }}</div>
+                            <div class="product-details">
+                                <span class="product-quantity">{{ product.quantity }} x</span>
+                                <span class="product-price">{{ product.price }} zł</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if order.has_more_products %}
+                        <div class="more-products">
+                            <span>+{{ order.items_count - order.products|length }} więcej produktów</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="order-footer">
+                        <div class="order-total">
+                            <span class="label">Wartość produktów:</span>
+                            <span class="value price">{{ order.total_price }} zł</span>
+                        </div>
+                        <div class="order-total">
+                            <span class="label">Koszt dostawy:</span>
+                            <span class="value">
+                                {% if order.total_price >= 200 %}
+                                    0 zł
+                                {% else %}
+                                    {{ order.shipping_cost }} zł
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="order-total">
+                            <span class="label">Razem:</span>
+                            <span class="value price">{{ order.total_with_shipping }} zł</span>
+                        </div>
+                        <div class="order-actions">
+                            <a href="{{ url_for('order_confirmation', order_id=order.id) }}" class="btn btn-sm">Szczegóły</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-orders">
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag empty-icon"></i>
+                    <h4>Brak zamówień</h4>
+                    <p>Użytkownik nie złożył jeszcze żadnych zamówień.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="orders-stats">
+        <div class="section-header">
+            <h3><i class="fas fa-chart-bar"></i> Statystyki zamówień użytkownika</h3>
+        </div>
+        
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-value">{{ orders|length }}</div>
+                <div class="stat-label">Wszystkie zamówienia</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ orders|selectattr('status', 'equalto', 'completed')|list|length }}</div>
+                <div class="stat-label">Zrealizowane</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ orders|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+                <div class="stat-label">Oczekujące</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-value">{{ orders|selectattr('status', 'equalto', 'canceled')|list|length }}</div>
+                <div class="stat-label">Anulowane</div>
+            </div>
+        </div>
+        
+        <div class="total-spent">
+            <div class="label">Suma wszystkich zakupów:</div>
+            <div class="value">
+                {{ orders|selectattr('status', 'ne', 'canceled')|sum(attribute='total_price')|round(2) }} zł
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

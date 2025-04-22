@@ -1,0 +1,105 @@
+<!-- templates/user_panel/admin_categories.html -->
+{% extends 'user_panel/base.html' %}
+
+{% block title %}Zarządzanie kategoriami - Panel administratora - BudowMax{% endblock %}
+
+{% block content_title %}Zarządzanie kategoriami{% endblock %}
+
+{% block content %}
+<div class="orders-wrapper">
+    <div class="orders-section">
+        <div class="section-header">
+            <h3><i class="fas fa-tags"></i> Kategorie</h3>
+            <button class="btn btn-primary btn-sm" onclick="showAddCategoryModal()">Dodaj kategorię</button>
+        </div>
+        
+        {% if categories %}
+            <div class="orders-table-responsive">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nazwa</th>
+                            <th>Liczba produktów</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                        <tr>
+                            <td>#{{ category.id }}</td>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.products|length }}</td>
+                            <td>
+                                <form action="{{ url_for('admin_delete_category', category_id=category.id) }}" method="POST" class="inline-form" onsubmit="return confirm('Czy na pewno chcesz usunąć tę kategorię?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">Usuń</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-orders">
+                <p>Nie ma jeszcze żadnych kategorii.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal dodawania kategorii -->
+<div id="addCategoryModal" class="review-modal" style="display: none;">
+    <div class="review-modal-content">
+        <span class="close-modal" onclick="hideAddCategoryModal()">&times;</span>
+        <h2>Dodaj nową kategorię</h2>
+        
+        <form action="{{ url_for('admin_add_category') }}" method="POST" id="addCategoryForm">
+            <div class="form-group">
+                <label for="name">Nazwa kategorii</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="review-buttons">
+                <button type="submit" class="btn btn-primary">Dodaj kategorię</button>
+                <button type="button" class="btn btn-secondary" onclick="hideAddCategoryModal()">Anuluj</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.inline-form {
+    display: inline-block;
+}
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+</style>
+
+<script>
+function showAddCategoryModal() {
+    const modal = document.getElementById('addCategoryModal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.style.opacity = '1', 10);
+}
+
+function hideAddCategoryModal() {
+    const modal = document.getElementById('addCategoryModal');
+    modal.style.opacity = '0';
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+// Zamknij modal po kliknięciu poza jego zawartością
+window.onclick = function(event) {
+    const modal = document.getElementById('addCategoryModal');
+    if (event.target == modal) {
+        hideAddCategoryModal();
+    }
+}
+</script>
+{% endblock %}

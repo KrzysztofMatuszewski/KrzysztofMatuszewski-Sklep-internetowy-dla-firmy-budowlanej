@@ -81,6 +81,39 @@
                                     <i class="fas fa-clipboard-list"></i> Historia zamówień
                                 </a>
                             </li>
+                            
+                            {% if current_user.roleId == 1 %}
+                                <!-- Sekcja tylko dla administratora -->
+                                <li class="has-submenu {% if 'admin' in request.endpoint %}active{% endif %}">
+                                    <a href="#" onclick="toggleAdminMenu(event)">
+                                        <i class="fas fa-shield-alt"></i> Panel administratora
+                                        <i class="fas fa-chevron-down submenu-icon"></i>
+                                    </a>
+                                    <ul class="admin-submenu" id="adminSubmenu">
+                                        <li {% if request.endpoint == 'admin_products' %}class="active"{% endif %}>
+                                            <a href="{{ url_for('admin_products') }}">
+                                                <i class="fas fa-boxes"></i> Zarządzanie produktami
+                                            </a>
+                                        </li>
+                                        <li {% if request.endpoint == 'admin_categories' %}class="active"{% endif %}>
+                                            <a href="{{ url_for('admin_categories') }}">
+                                                <i class="fas fa-tags"></i> Zarządzanie kategoriami
+                                            </a>
+                                        </li>
+                                        <li {% if request.endpoint == 'admin_users' %}class="active"{% endif %}>
+                                            <a href="{{ url_for('admin_users') }}">
+                                                <i class="fas fa-users"></i> Zarządzanie użytkownikami
+                                            </a>
+                                        </li>
+                                        <li {% if request.endpoint == 'admin_reports' %}class="active"{% endif %}>
+                                            <a href="{{ url_for('admin_reports') }}">
+                                                <i class="fas fa-chart-bar"></i> Raporty
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            {% endif %}
+                            
                             <li>
                                 <a href="{{ url_for('logout') }}" class="logout-link">
                                     <i class="fas fa-sign-out-alt"></i> Wyloguj się
@@ -170,24 +203,56 @@
     </footer>
 
     <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/user_panel.js') }}"></script>
-    {% block extra_scripts %}{% endblock %}
-    
-    <script>
-        // Obsługa zamykania powiadomień flash
-        document.addEventListener('DOMContentLoaded', function() {
-            const closeButtons = document.querySelectorAll('.close-flash');
-            closeButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const flashMessage = this.parentElement;
-                    flashMessage.style.opacity = '0';
-                    setTimeout(() => {
-                        flashMessage.style.display = 'none';
-                    }, 300);
-                });
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/user_panel.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+
+<script>
+    // Obsługa zamykania powiadomień flash
+    document.addEventListener('DOMContentLoaded', function() {
+        const closeButtons = document.querySelectorAll('.close-flash');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const flashMessage = this.parentElement;
+                flashMessage.style.opacity = '0';
+                setTimeout(() => {
+                    flashMessage.style.display = 'none';
+                }, 300);
             });
         });
-    </script>
+
+        // Sprawdź czy jesteśmy na stronie administratora i rozwiń menu
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/admin')) {
+            const submenu = document.getElementById('adminSubmenu');
+            const parentItem = submenu?.parentElement;
+            if (submenu && parentItem) {
+                submenu.classList.add('show');
+                parentItem.classList.add('open');
+            }
+        }
+    });
+
+    // Funkcja do rozwijania/zwijania menu administratora
+    function toggleAdminMenu(event) {
+        event.preventDefault();
+        
+        const parentItem = event.currentTarget.parentElement;
+        const submenu = document.getElementById('adminSubmenu');
+        
+        if (!submenu) return;
+        
+        // Przełącz stan
+        const isCurrentlyOpen = submenu.classList.contains('show');
+        
+        if (isCurrentlyOpen) {
+            submenu.classList.remove('show');
+            parentItem.classList.remove('open');
+        } else {
+            submenu.classList.add('show');
+            parentItem.classList.add('open');
+        }
+    }
+</script>
 </body>
 </html>

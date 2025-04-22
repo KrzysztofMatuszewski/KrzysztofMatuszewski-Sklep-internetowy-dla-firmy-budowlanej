@@ -1717,6 +1717,298 @@ def make_session_permanent():
 def page_not_found(e):
     return render_template('404.html'), 404
 
+
+# Dekorator sprawdzający czy użytkownik jest administratorem
+def admin_required(f):
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if current_user.roleId != 1:  # Zakładam, że 1 to ID roli admina
+            flash('Nie masz uprawnień dostępu do tej strony.')
+            return redirect(url_for('user_panel'))
+        return f(*args, **kwargs)
+    decorated_function.__name__ = f.__name__
+    return decorated_function
+
+
+
+@app.route('/user_panel/admin/products')
+@admin_required
+def admin_products():
+    """Zarządzanie produktami"""
+    products = Product.query.all()
+    categories = Category.query.all()
+    return render_template('user_panel/admin_products.html', products=products, categories=categories)
+
+@app.route('/user_panel/admin/categories')
+@admin_required
+def admin_categories():
+    """Zarządzanie kategoriami"""
+    categories = Category.query.all()
+    return render_template('user_panel/admin_categories.html', categories=categories)
+
+@app.route('/user_panel/admin/users')
+@admin_required
+def admin_users():
+    """Zarządzanie użytkownikami"""
+    users = User.query.all()
+    roles = Role.query.all()
+    return render_template('user_panel/admin_users.html', users=users, roles=roles)
+
+@app.route('/user_panel/admin/reports')
+@admin_required
+def admin_reports():
+    """Generowanie raportów"""
+    return render_template('user_panel/admin_reports.html')
+
+@app.route('/user_panel/admin/add_product', methods=['POST'])
+@admin_required
+def admin_add_product():
+    """Dodawanie nowego produktu"""
+    name = request.form.get('name')
+    description = request.form.get('description')
+    sellPrice = request.form.get('sellPrice')
+    buyPrice = request.form.get('buyPrice')
+    categoryId = request.form.get('categoryId')
+    stock = request.form.get('stock')
+    
+    # Walidacja danych
+    if not all([name, description, sellPrice, buyPrice, categoryId, stock]):
+        flash('Wszystkie pola są wymagane.')
+        return redirect(url_for('admin_products'))
+    
+    try:
+        new_product = Product(
+            name=name,
+            description=description,
+            sellPrice=float(sellPrice),
+            buyPrice=float(buyPrice),
+            categoryId=int(categoryId),
+            stock=int(stock)
+        )
+        db.session.add(new_product)
+        db.session.commit()
+        
+        flash('Produkt został dodany pomyślnie.')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Błąd podczas dodawania produktu: {str(e)}')
+    
+    return redirect(url_for('admin_products'))
+
+@app.route('/user_panel/admin/delete_product/<int:product_id>', methods=['POST'])
+@admin_required
+def admin_delete_product(product_id):
+    """Usuwanie produktu"""
+    product = Product.query.get_or_404(product_id)
+    
+    try:
+        db.session.delete(product)
+        db.session.commit()
+        flash('Produkt został usunięty.')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Błąd podczas usuwania produktu: {str(e)}')
+    
+    return redirect(url_for('admin_products'))
+
+@app.route('/user_panel/admin/add_category', methods=['POST'])
+@admin_required
+def admin_add_category():
+    """Dodawanie nowej kategorii"""
+    name = request.form.get('name')
+    
+    if not name:
+        flash('Nazwa kategorii jest wymagana.')
+        return redirect(url_for('admin_categories'))
+    
+    try:
+        new_category = Category(name=name)
+        db.session.add(new_category)
+        db.session.commit()
+        
+        flash('Kategoria została dodana pomyślnie.')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Błąd podczas dodawania kategorii: {str(e)}')
+    
+    return redirect(url_for('admin_categories'))
+
+@app.route('/user_panel/admin/delete_category/<int:category_id>', methods=['POST'])
+@admin_required
+def admin_delete_category(category_id):
+    """Usuwanie kategorii"""
+    category = Category.query.get_or_404(category_id)
+    
+    # Sprawdź czy kategoria nie ma przypisanych produktów
+    products_count = Product.query.filter_by(categoryId=category_id).count()
+    if products_count > 0:
+        flash(f'Nie można usunąć kategorii, ponieważ zawiera {products_count} produktów.')
+        return redirect(url_for('admin_categories'))
+    
+    try:
+        db.session.delete(category)
+        db.session.commit()
+        flash('Kategoria została usunięta.')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Błąd podczas usuwania kategorii: {str(e)}')
+    
+    return redirect(url_for('admin_categories'))
+
+@app.route('/user_panel/admin/edit_user_role/<int:user_id>', methods=['POST'])
+@admin_required
+def admin_edit_user_role(user_id):
+    """Zmiana roli użytkownika"""
+    user = User.query.get_or_404(user_id)
+    new_role_id = request.form.get('roleId')
+    
+    if not new_role_id:
+        flash('Rola jest wymagana.')
+        return redirect(url_for('admin_users'))
+    
+    try:
+        user.roleId = int(new_role_id)
+        db.session.commit()
+        flash('Rola użytkownika została zmieniona.')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Błąd podczas zmiany roli: {str(e)}')
+    
+    return redirect(url_for('admin_users'))
+
+@app.route('/user_panel/admin/edit_product/<int:product_id>', methods=['POST'])
+@admin_required
+def admin_edit_product(product_id):
+    """Edycja produktu"""
+    product = Product.query.get_or_404(product_id)
+    
+    # Pobierz dane z formularza
+    name = request.form.get('name')
+    description = request.form.get('description')
+    sellPrice = request.form.get('sellPrice')
+    buyPrice = request.form.get('buyPrice')
+    categoryId = request.form.get('categoryId')
+    stock = request.form.get('stock')
+    
+    # Walidacja danych
+    if not all([name, description, sellPrice, buyPrice, categoryId, stock]):
+        flash('Wszystkie pola są wymagane.')
+        return redirect(url_for('admin_products'))
+    
+    try:
+        # Aktualizuj dane produktu
+        product.name = name
+        product.description = description
+        product.sellPrice = float(sellPrice)
+        product.buyPrice = float(buyPrice)
+        product.categoryId = int(categoryId)
+        product.stock = int(stock)
+        
+        db.session.commit()
+        
+        flash('Produkt został zaktualizowany pomyślnie.')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Błąd podczas aktualizacji produktu: {str(e)}')
+    
+    return redirect(url_for('admin_products'))
+
+# Dodaj ten route do main.py
+
+@app.route('/user_panel/admin/user_orders/<int:user_id>')
+@admin_required
+def admin_user_orders(user_id):
+    """Podgląd zamówień użytkownika przez administratora"""
+    user = User.query.get_or_404(user_id)
+    
+    # Pobierz wszystkie zamówienia użytkownika oprócz koszyków
+    orders = Order.query.filter(
+        Order.userId == user_id,
+        Order.status != 'cart'
+    ).order_by(Order.createdAt.desc()).all()
+    
+    # Przygotuj listę zamówień z dodatkowymi informacjami
+    order_list = []
+    for order in orders:
+        # Pobierz liczbę produktów w zamówieniu
+        items_count = db.session.query(func.sum(OrderItem.quantity)).filter(
+            OrderItem.orderId == order.id
+        ).scalar() or 0
+        
+        # Pobierz kilka produktów z zamówienia (np. pierwsze 3)
+        order_items = OrderItem.query.filter_by(orderId=order.id).limit(3).all()
+        products = []
+        
+        for item in order_items:
+            product = Product.query.get(item.productId)
+            if product:
+                products.append({
+                    'id': product.id,
+                    'name': product.name,
+                    'quantity': item.quantity,
+                    'price': float(item.sellPrice)
+                })
+        
+        # Sprawdź, czy zamówienie ma więcej niż 3 produkty
+        has_more_products = OrderItem.query.filter_by(orderId=order.id).count() > 3
+        
+        # Wartość produktów z zamówienia
+        order_total = float(order.totalPrice)
+        
+        # Oblicz koszt dostawy i cenę całkowitą
+        shipping_cost = 15 if order_total < 200 and order_total > 0 else 0
+        total_with_shipping = order_total + shipping_cost
+        
+        order_dict = {
+            'id': order.id,
+            'date': order.createdAt,
+            'status': order.status,
+            'total_price': order_total,
+            'shipping_cost': shipping_cost,
+            'total_with_shipping': total_with_shipping,
+            'items_count': items_count,
+            'products': products,
+            'has_more_products': has_more_products
+        }
+        order_list.append(order_dict)
+    
+    return render_template('user_panel/admin_user_orders.html', user=user, orders=order_list)
+
+@app.route('/user_panel/admin/delete_user/<int:user_id>', methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    """Usuwanie użytkownika (soft delete) - zmiana danych na 'deleted'"""
+    user = User.query.get_or_404(user_id)
+    
+    # Nie pozwól na usunięcie administratora
+    if user.roleId == 1:
+        flash('Nie można usunąć konta administratora.')
+        return redirect(url_for('admin_users'))
+    
+    # Nie pozwól administratorowi usunąć samego siebie
+    if user.id == current_user.id:
+        flash('Nie możesz usunąć własnego konta.')
+        return redirect(url_for('admin_users'))
+    
+    try:
+        # Zmień dane użytkownika na "deleted"
+        user.username = f"deleted_{user.id}"
+        user.email = f"deleted_{user.id}@deleted.com"
+        user.password = generate_password_hash('deleted')  # Zmień hasło na losowe
+        
+        # Opcjonalnie: zmień rolę na zwykłego użytkownika
+        if user.roleId == 1:  # jeśli był adminem
+            user.roleId = 2  # zmień na zwykłego użytkownika
+        
+        db.session.commit()
+        
+        flash(f'Dane użytkownika #{user_id} zostały zmienione na "deleted". Historia zamówień została zachowana.')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Błąd podczas usuwania użytkownika: {str(e)}')
+    
+    return redirect(url_for('admin_users'))
+
 if __name__ == '__main__':
     os.makedirs('static/img/products', exist_ok=True)
     os.makedirs('static/img/categories', exist_ok=True)

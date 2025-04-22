@@ -1,0 +1,226 @@
+<!-- templates/user_panel/admin_products.html -->
+{% extends 'user_panel/base.html' %}
+
+{% block title %}Zarządzanie produktami - Panel administratora - BudowMax{% endblock %}
+
+{% block content_title %}Zarządzanie produktami{% endblock %}
+
+{% block content %}
+<div class="orders-wrapper">
+    <div class="orders-section">
+        <div class="section-header">
+            <h3><i class="fas fa-boxes"></i> Produkty</h3>
+            <button class="btn btn-primary btn-sm" onclick="showAddProductModal()">Dodaj produkt</button>
+        </div>
+        
+        {% if products %}
+            <div class="orders-table-responsive">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nazwa</th>
+                            <th>Kategoria</th>
+                            <th>Cena sprzedaży</th>
+                            <th>Stan magazynowy</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>#{{ product.id }}</td>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.category.name if product.category else 'Brak kategorii' }}</td>
+                            <td>{{ product.sellPrice }} zł</td>
+                            <td>{{ product.stock }} szt.</td>
+                            <td>
+                                <button class="btn btn-sm" onclick="showEditProductModal({{ product.id }}, '{{ product.name }}', '{{ product.description }}', {{ product.sellPrice }}, {{ product.buyPrice }}, {{ product.categoryId }}, {{ product.stock }})">Edytuj</button>
+                                <form action="{{ url_for('admin_delete_product', product_id=product.id) }}" method="POST" class="inline-form" onsubmit="return confirm('Czy na pewno chcesz usunąć ten produkt?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">Usuń</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-orders">
+                <p>Nie ma jeszcze żadnych produktów.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal dodawania produktu -->
+<div id="addProductModal" class="review-modal" style="display: none;">
+    <div class="review-modal-content">
+        <span class="close-modal" onclick="hideAddProductModal()">&times;</span>
+        <h2>Dodaj nowy produkt</h2>
+        
+        <form action="{{ url_for('admin_add_product') }}" method="POST" id="addProductForm">
+            <div class="form-group">
+                <label for="name">Nazwa produktu</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Opis</label>
+                <textarea id="description" name="description" rows="4" required></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sellPrice">Cena sprzedaży</label>
+                    <input type="number" id="sellPrice" name="sellPrice" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="buyPrice">Cena zakupu</label>
+                    <input type="number" id="buyPrice" name="buyPrice" step="0.01" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="categoryId">Kategoria</label>
+                    <select id="categoryId" name="categoryId" required>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="stock">Stan magazynowy</label>
+                    <input type="number" id="stock" name="stock" required>
+                </div>
+            </div>
+            
+            <div class="review-buttons">
+                <button type="submit" class="btn btn-primary">Dodaj produkt</button>
+                <button type="button" class="btn btn-secondary" onclick="hideAddProductModal()">Anuluj</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal edycji produktu -->
+<div id="editProductModal" class="review-modal" style="display: none;">
+    <div class="review-modal-content">
+        <span class="close-modal" onclick="hideEditProductModal()">&times;</span>
+        <h2>Edytuj produkt</h2>
+        
+        <form id="editProductForm" method="POST">
+            <div class="form-group">
+                <label for="edit_name">Nazwa produktu</label>
+                <input type="text" id="edit_name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="edit_description">Opis</label>
+                <textarea id="edit_description" name="description" rows="4" required></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_sellPrice">Cena sprzedaży</label>
+                    <input type="number" id="edit_sellPrice" name="sellPrice" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_buyPrice">Cena zakupu</label>
+                    <input type="number" id="edit_buyPrice" name="buyPrice" step="0.01" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_categoryId">Kategoria</label>
+                    <select id="edit_categoryId" name="categoryId" required>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_stock">Stan magazynowy</label>
+                    <input type="number" id="edit_stock" name="stock" required>
+                </div>
+            </div>
+            
+            <div class="review-buttons">
+                <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+                <button type="button" class="btn btn-secondary" onclick="hideEditProductModal()">Anuluj</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.inline-form {
+    display: inline-block;
+}
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+</style>
+
+<script>
+function showAddProductModal() {
+    const modal = document.getElementById('addProductModal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.style.opacity = '1', 10);
+}
+
+function hideAddProductModal() {
+    const modal = document.getElementById('addProductModal');
+    modal.style.opacity = '0';
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+function showEditProductModal(id, name, description, sellPrice, buyPrice, categoryId, stock) {
+    const modal = document.getElementById('editProductModal');
+    const form = document.getElementById('editProductForm');
+    
+    // Ustaw akcję formularza
+    form.action = '{{ url_for("admin_edit_product", product_id=0) }}'.replace('0', id);
+    
+    // Wypełnij pola formularza
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_description').value = description;
+    document.getElementById('edit_sellPrice').value = sellPrice;
+    document.getElementById('edit_buyPrice').value = buyPrice;
+    document.getElementById('edit_categoryId').value = categoryId;
+    document.getElementById('edit_stock').value = stock;
+    
+    modal.style.display = 'flex';
+    setTimeout(() => modal.style.opacity = '1', 10);
+}
+
+function hideEditProductModal() {
+    const modal = document.getElementById('editProductModal');
+    modal.style.opacity = '0';
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+// Zamknij modal po kliknięciu poza jego zawartością
+window.onclick = function(event) {
+    const addModal = document.getElementById('addProductModal');
+    const editModal = document.getElementById('editProductModal');
+    
+    if (event.target == addModal) {
+        hideAddProductModal();
+    }
+    if (event.target == editModal) {
+        hideEditProductModal();
+    }
+}
+</script>
+{% endblock %}

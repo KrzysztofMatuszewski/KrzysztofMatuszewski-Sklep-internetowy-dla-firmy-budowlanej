@@ -1,0 +1,46 @@
+<!-- templates/user_panel/admin_reports.html -->
+{% extends 'user_panel/base.html' %}
+
+{% block title %}Raporty - Panel administratora - BudowMax{% endblock %}
+
+{% block content_title %}Raporty{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3><i class="fas fa-chart-bar"></i> Generator raportów</h3>
+        </div>
+        
+        <div class="quick-links">
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                <h4>Raport sprzedaży</h4>
+                <p>Generuj szczegółowy raport sprzedaży</p>
+                <button class="btn btn-sm btn-block">Generuj</button>
+            </div>
+            
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-boxes"></i></div>
+                <h4>Raport stanów magazynowych</h4>
+                <p>Sprawdź stany magazynowe produktów</p>
+                <button class="btn btn-sm btn-block">Generuj</button>
+            </div>
+            
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-users"></i></div>
+                <h4>Raport użytkowników</h4>
+                <p>Analiza aktywności użytkowników</p>
+                <button class="btn btn-sm btn-block">Generuj</button>
+            </div>
+            
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-star"></i></div>
+                <h4>Raport popularności</h4>
+                <p>Najpopularniejsze produkty</p>
+                <button class="btn btn-sm btn-block">Generuj</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

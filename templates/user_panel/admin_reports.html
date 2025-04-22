@@ -17,7 +17,7 @@
                 <div class="card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
                 <h4>Raport sprzedaży</h4>
                 <p>Generuj szczegółowy raport sprzedaży</p>
-                <button class="btn btn-sm btn-block">Generuj</button>
+                <a href="{{ url_for('admin_reports', type='sales') }}" class="btn btn-sm btn-block">Generuj</a>
             </div>
             
             <div class="quick-link-card">
@@ -27,19 +27,7 @@
                 <button class="btn btn-sm btn-block">Generuj</button>
             </div>
             
-            <div class="quick-link-card">
-                <div class="card-icon"><i class="fas fa-users"></i></div>
-                <h4>Raport użytkowników</h4>
-                <p>Analiza aktywności użytkowników</p>
-                <button class="btn btn-sm btn-block">Generuj</button>
-            </div>
             
-            <div class="quick-link-card">
-                <div class="card-icon"><i class="fas fa-star"></i></div>
-                <h4>Raport popularności</h4>
-                <p>Najpopularniejsze produkty</p>
-                <button class="btn btn-sm btn-block">Generuj</button>
-            </div>
         </div>
     </div>
 </div>

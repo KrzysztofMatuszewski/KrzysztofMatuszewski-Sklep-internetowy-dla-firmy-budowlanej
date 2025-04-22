@@ -1,0 +1,502 @@
+<!-- templates/user_panel/admin_sales_report.html -->
+{% extends 'user_panel/base.html' %}
+
+{% block title %}Raport sprzedaży - Panel administratora - BudowMax{% endblock %}
+
+{% block content_title %}Raport sprzedaży{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-form {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+
+    .form-group select,
+    .form-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .summary-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        flex: 1;
+        min-width: 200px;
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .summary-card h4 {
+        margin-top: 0;
+        margin-bottom: 5px;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .summary-card .value {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .summary-card .secondary {
+        font-size: 14px;
+        color: #777;
+        margin-top: 5px;
+    }
+
+    .report-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    
+    /* Ważne: dla stabilności tabeli */
+    .report-table colgroup col.col-period { width: 25%; }
+    .report-table colgroup col.col-orders { width: 15%; }
+    .report-table colgroup col.col-sales { width: 15%; }
+    .report-table colgroup col.col-costs { width: 15%; }
+    .report-table colgroup col.col-profit { width: 15%; }
+    .report-table colgroup col.col-margin { width: 15%; }
+
+    .report-table th, .report-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+    
+    .report-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #555;
+        border-bottom: 2px solid #eee;
+        position: sticky;
+        top: 0;
+    }
+
+    .report-table tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .report-table .total-row {
+        font-weight: 700;
+        background-color: #f0f0f0;
+    }
+    
+    .report-table .total-row td {
+        border-top: 2px solid #ddd;
+    }
+
+    .positive {
+        color: #28a745;
+    }
+
+    .negative {
+        color: #dc3545;
+    }
+
+    .actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px 0;
+        color: #777;
+    }
+
+    .info-box {
+        padding: 15px;
+        background-color: #e6f3ff;
+        border-left: 4px solid #007bff;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .info-box p {
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+        }
+        
+        .summary-card {
+            min-width: 100%;
+        }
+    }
+    
+    /* Style dla drukowania */
+    @media print {
+        header, footer, .user-panel-sidebar, .filter-form, .actions, .mobile-menu-btn, .flash-messages, 
+        .content-header, nav, .btn, button {
+            display: none !important;
+        }
+        
+        .user-panel, .user-panel-content, .dashboard-wrapper, .dashboard-section, .container, body {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: white !important;
+        }
+        
+        body {
+            font-size: 10pt;
+        }
+        
+        .print-header {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .print-header h1 {
+            font-size: 16pt;
+            margin-bottom: 5px;
+        }
+        
+        .print-header p {
+            font-size: 9pt;
+            color: #666;
+        }
+        
+        .print-header h2 {
+            font-size: 14pt;
+            margin-top: 10px;
+        }
+        
+        .section-header {
+            text-align: center;
+            display: none;
+        }
+        
+        .summary-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .summary-card {
+            flex: 1;
+            padding: 10px;
+            box-shadow: none;
+            border: 1px solid #eee;
+        }
+        
+        .summary-card h4 {
+            font-size: 9pt;
+        }
+        
+        .summary-card .value {
+            font-size: 12pt;
+        }
+        
+        .summary-card .secondary {
+            font-size: 8pt;
+        }
+        
+        .report-table-wrapper {
+            overflow-x: visible;
+        }
+        
+        .report-table {
+            width: 100%;
+            font-size: 9pt;
+            page-break-inside: auto;
+        }
+        
+        .report-table th, .report-table td {
+            padding: 5px;
+        }
+        
+        /* Zapobieganie łamaniu tabeli między stronami */
+        .report-table tr {
+            page-break-inside: avoid;
+        }
+        
+        /* Powtarzanie nagłówków tabeli na każdej stronie */
+        .report-table thead {
+            display: table-header-group;
+        }
+        
+        .report-table tfoot {
+            display: table-footer-group;
+        }
+        
+        .info-box {
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 9pt;
+        }
+    }
+    
+    .print-header {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <div class="dashboard-section">
+        <div class="print-header">
+            <h1>BudowMax</h1>
+            <p>Hurtownia sprzętu i materiałów budowlanych</p>
+            <h2>Raport sprzedaży</h2>
+            <p>Okres raportu: Od {{ start_date }} do {{ end_date }} ({{ 'dziennie' if frequency == 'daily' else 'tygodniowo' if frequency == 'weekly' else 'miesięcznie' if frequency == 'monthly' else 'rocznie' }})</p>
+        </div>
+        
+        <div class="section-header">
+            <h3><i class="fas fa-chart-line"></i> Raport sprzedaży</h3>
+        </div>
+        
+        <div class="filter-form">
+            <form action="{{ url_for('admin_reports') }}" method="GET">
+                <input type="hidden" name="type" value="sales">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="frequency">Częstotliwość raportowania</label>
+                        <select name="frequency" id="frequency" class="form-control">
+                            <option value="daily" {% if frequency == 'daily' %}selected{% endif %}>Dzienna</option>
+                            <option value="weekly" {% if frequency == 'weekly' %}selected{% endif %}>Tygodniowa</option>
+                            <option value="monthly" {% if frequency == 'monthly' %}selected{% endif %}>Miesięczna</option>
+                            <option value="yearly" {% if frequency == 'yearly' %}selected{% endif %}>Roczna</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status zamówienia</label>
+                        <select name="status" id="status" class="form-control">
+                            <option value="all" {% if status == 'all' %}selected{% endif %}>Wszystkie</option>
+                            <option value="pending" {% if status == 'pending' %}selected{% endif %}>W realizacji</option>
+                            <option value="completed" {% if status == 'completed' %}selected{% endif %}>Zrealizowane</option>
+                            <option value="canceled" {% if status == 'canceled' %}selected{% endif %}>Anulowane</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start_date">Data początkowa</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="end_date">Data końcowa</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: flex-end;">
+                        <button type="submit" class="btn">Generuj raport</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        {% if report_entries %}
+            <div class="info-box">
+                <p><strong>Okres raportu:</strong> Od {{ start_date }} do {{ end_date }} ({{ 'dziennie' if frequency == 'daily' else 'tygodniowo' if frequency == 'weekly' else 'miesięcznie' if frequency == 'monthly' else 'rocznie' }})</p>
+            </div>
+
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h4>Liczba zamówień</h4>
+                    <div class="value">{{ total_orders }}</div>
+                </div>
+                <div class="summary-card">
+                    <h4>Wartość sprzedaży</h4>
+                    <div class="value">{{ "%.2f"|format(total_sell) }} zł</div>
+                    <div class="secondary">Średnia wartość zamówienia: {{ "%.2f"|format(avg_order_value) }} zł</div>
+                </div>
+                <div class="summary-card">
+                    <h4>Wartość kosztów</h4>
+                    <div class="value">{{ "%.2f"|format(total_buy) }} zł</div>
+                </div>
+                <div class="summary-card">
+                    <h4>Zysk</h4>
+                    <div class="value {% if total_profit > 0 %}positive{% elif total_profit < 0 %}negative{% endif %}">
+                        {{ "%.2f"|format(total_profit) }} zł
+                    </div>
+                    <div class="secondary">
+                        {{ "%.2f"|format(profit_percentage) }}% wartości sprzedaży
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-table-wrapper">
+                <table class="report-table">
+                    <colgroup>
+                        <col class="col-period">
+                        <col class="col-orders">
+                        <col class="col-sales">
+                        <col class="col-costs">
+                        <col class="col-profit">
+                        <col class="col-margin">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Okres</th>
+                            <th>Liczba zam.</th>
+                            <th>Wartość sp.</th>
+                            <th>Wartość ko.</th>
+                            <th>Zysk</th>
+                            <th>Marża (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in report_entries %}
+                            <tr>
+                                <td>{{ entry.period }}</td>
+                                <td>{{ entry.orders_count }}</td>
+                                <td>{{ "%.2f"|format(entry.total_sell) }} zł</td>
+                                <td>{{ "%.2f"|format(entry.total_buy) }} zł</td>
+                                <td class="{% if entry.profit > 0 %}positive{% elif entry.profit < 0 %}negative{% endif %}">
+                                    {{ "%.2f"|format(entry.profit) }} zł
+                                </td>
+                                <td>
+                                    {% if entry.total_sell > 0 %}
+                                        {{ "%.2f"|format(entry.profit / entry.total_sell * 100) }}%
+                                    {% else %}
+                                        0.00%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td>Razem</td>
+                            <td>{{ total_orders }}</td>
+                            <td>{{ "%.2f"|format(total_sell) }} zł</td>
+                            <td>{{ "%.2f"|format(total_buy) }} zł</td>
+                            <td class="{% if total_profit > 0 %}positive{% elif total_profit < 0 %}negative{% endif %}">
+                                {{ "%.2f"|format(total_profit) }} zł
+                            </td>
+                            <td>
+                                {% if total_sell > 0 %}
+                                    {{ "%.2f"|format(profit_percentage) }}%
+                                {% else %}
+                                    0.00%
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="actions">
+                <button class="btn" id="printReport"><i class="fas fa-print"></i> Drukuj raport</button>
+                <button class="btn" id="exportCSV"><i class="fas fa-file-excel"></i> Eksportuj do CSV</button>
+                <a href="{{ url_for('admin_reports') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Powrót</a>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <i class="fas fa-chart-area" style="font-size: 48px; color: #ddd; margin-bottom: 15px;"></i>
+                <h3>Brak danych w wybranym okresie</h3>
+                <p>Zmień kryteria wyszukiwania, aby zobaczyć raport.</p>
+                <a href="{{ url_for('admin_reports') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Powrót</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obsługa przycisku drukowania
+        const printBtn = document.getElementById('printReport');
+        if (printBtn) {
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+        }
+        
+        // Obsługa przycisku eksportu do CSV
+        const exportCSVBtn = document.getElementById('exportCSV');
+        if (exportCSVBtn) {
+            exportCSVBtn.addEventListener('click', function() {
+                const table = document.querySelector('.report-table');
+                if (!table) return;
+                
+                // Przygotowanie danych w formacie CSV
+                let csv = [];
+                const rows = table.querySelectorAll('tr');
+                
+                for (let i = 0; i < rows.length; i++) {
+                    const row = [], cols = rows[i].querySelectorAll('td, th');
+                    
+                    for (let j = 0; j < cols.length; j++) {
+                        // Usuwamy znaki PLN i inne formatowanie
+                        let text = cols[j].innerText.replace(' zł', '');
+                        row.push('"' + text.replace(/"/g, '""') + '"');
+                    }
+                    
+                    csv.push(row.join(';'));
+                }
+                
+                // Dodanie BOM (Byte Order Mark) dla poprawnego kodowania UTF-8
+                const BOM = '\uFEFF';
+                const csvContent = BOM + csv.join('\n');
+                
+                // Generowanie linku do pobrania
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                
+                const filename = `raport_sprzedazy_${document.getElementById('start_date').value}_${document.getElementById('end_date').value}.csv`;
+                
+                if (navigator.msSaveBlob) { // IE 10+
+                    navigator.msSaveBlob(blob, filename);
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    link.href = url;
+                    link.setAttribute('download', filename);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1758,6 +1758,164 @@ def admin_users():
 @admin_required
 def admin_reports():
     """Generowanie raportów"""
+    report_type = request.args.get('type')
+    
+    # Jeśli wybrano raport sprzedaży
+    if report_type == 'sales':
+        # Ustal domyślne parametry
+        today = datetime.now()
+        default_end_date = today.strftime('%Y-%m-%d')
+        default_start_date = (today - timedelta(days=30)).strftime('%Y-%m-%d')
+        
+        # Pobierz parametry z formularza lub ustaw domyślne
+        frequency = request.args.get('frequency', 'daily')
+        status = request.args.get('status', 'all')
+        start_date = request.args.get('start_date', default_start_date)
+        end_date = request.args.get('end_date', default_end_date)
+        
+        # Konwertuj daty na obiekty datetime
+        try:
+            start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+            end_datetime = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1) - timedelta(seconds=1)  # Koniec dnia
+        except ValueError:
+            flash('Nieprawidłowy format daty.')
+            return render_template('user_panel/admin_reports.html')
+        
+        # Sprawdź, czy data początkowa jest wcześniejsza niż końcowa
+        if start_datetime > end_datetime:
+            flash('Data początkowa nie może być późniejsza niż data końcowa.')
+            return render_template('user_panel/admin_reports.html')
+        
+        # Buduj zapytanie bazodanowe
+        query = db.session.query(
+            Order.id,
+            Order.totalPrice,
+            Order.status,
+            Order.createdAt,
+            db.func.sum(OrderItem.totalSellPrice).label('total_sell_price'),
+            db.func.sum(OrderItem.totalBuyPrice).label('total_buy_price')
+        ).join(OrderItem, Order.id == OrderItem.orderId)
+        
+        # Filtruj po datach
+        query = query.filter(Order.createdAt >= start_datetime, Order.createdAt <= end_datetime)
+        
+        # Filtruj po statusie zamówienia
+        if status != 'all':
+            query = query.filter(Order.status == status)
+        else:
+            # Wykluczyć zamówienia o statusie 'cart'
+            query = query.filter(Order.status != 'cart')
+        
+        # Grupuj według zamówienia
+        query = query.group_by(Order.id)
+        
+        # Wykonaj zapytanie
+        orders = query.all()
+        
+        # Przygotuj dane do raportowania według częstotliwości
+        report_data = {}
+        time_periods = []
+        
+        # Funkcja pomocnicza do formatowania klucza okresu
+        def get_period_key(date):
+            if frequency == 'daily':
+                return date.strftime('%Y-%m-%d')
+            elif frequency == 'weekly':
+                # Poniedziałek jako pierwszy dzień tygodnia (0)
+                start_of_week = date - timedelta(days=date.weekday())
+                return start_of_week.strftime('%Y-%m-%d')
+            elif frequency == 'monthly':
+                return date.strftime('%Y-%m')
+            elif frequency == 'yearly':
+                return date.strftime('%Y')
+            return date.strftime('%Y-%m-%d')  # Domyślnie dziennie
+        
+        # Funkcja pomocnicza do formatowania etykiety okresu
+        def get_period_label(key):
+            if frequency == 'daily':
+                date = datetime.strptime(key, '%Y-%m-%d')
+                return date.strftime('%d.%m.%Y')
+            elif frequency == 'weekly':
+                date = datetime.strptime(key, '%Y-%m-%d')
+                end_of_week = date + timedelta(days=6)
+                return f"{date.strftime('%d.%m.%Y')} - {end_of_week.strftime('%d.%m.%Y')}"
+            elif frequency == 'monthly':
+                date = datetime.strptime(key + '-01', '%Y-%m-%d')
+                return date.strftime('%B %Y')
+            elif frequency == 'yearly':
+                return key
+            return key
+        
+        # Inicjalizuj wszystkie możliwe okresy w zakresie dat
+        current_date = start_datetime
+        while current_date <= end_datetime:
+            period_key = get_period_key(current_date)
+            if period_key not in report_data:
+                report_data[period_key] = {
+                    'period': get_period_label(period_key),
+                    'orders_count': 0,
+                    'total_sell': 0,
+                    'total_buy': 0,
+                    'profit': 0
+                }
+                time_periods.append(period_key)
+            
+            # Przejdź do następnego okresu
+            if frequency == 'daily':
+                current_date += timedelta(days=1)
+            elif frequency == 'weekly':
+                current_date += timedelta(weeks=1)
+            elif frequency == 'monthly':
+                # Przejdź do 1. dnia następnego miesiąca
+                if current_date.month == 12:
+                    current_date = current_date.replace(year=current_date.year + 1, month=1, day=1)
+                else:
+                    current_date = current_date.replace(month=current_date.month + 1, day=1)
+            elif frequency == 'yearly':
+                current_date = current_date.replace(year=current_date.year + 1)
+        
+        # Agreguj dane zamówień według okresów
+        for order in orders:
+            period_key = get_period_key(order.createdAt)
+            if period_key in report_data:
+                report_data[period_key]['orders_count'] += 1
+                report_data[period_key]['total_sell'] += float(order.total_sell_price)
+                report_data[period_key]['total_buy'] += float(order.total_buy_price)
+                report_data[period_key]['profit'] += float(order.total_sell_price) - float(order.total_buy_price)
+        
+        # Sortuj okresy chronologicznie
+        time_periods.sort()
+        
+        # Przygotuj dane do wyświetlenia w szablonie
+        report_entries = [report_data[period] for period in time_periods]
+        
+        # Oblicz całkowite wartości
+        total_orders = sum(entry['orders_count'] for entry in report_entries)
+        total_sell = sum(entry['total_sell'] for entry in report_entries)
+        total_buy = sum(entry['total_buy'] for entry in report_entries)
+        total_profit = sum(entry['profit'] for entry in report_entries)
+        avg_order_value = total_sell / total_orders if total_orders > 0 else 0
+        
+        # Oblicz procentowy zysk
+        profit_percentage = (total_profit / total_sell * 100) if total_sell > 0 else 0
+        
+        return render_template(
+            'user_panel/admin_sales_report.html',
+            report_entries=report_entries,
+            total_orders=total_orders,
+            total_sell=total_sell,
+            total_buy=total_buy,
+            total_profit=total_profit,
+            avg_order_value=avg_order_value,
+            profit_percentage=profit_percentage,
+            frequency=frequency,
+            status=status,
+            start_date=start_date,
+            end_date=end_date,
+            report_type=report_type
+        )
+    
+    # Domyślny widok - strona wyboru raportu
     return render_template('user_panel/admin_reports.html')
 
 @app.route('/user_panel/admin/add_product', methods=['POST'])

@@ -71,7 +71,7 @@
                 <h1>Płatność zrealizowana pomyślnie</h1>
                 <p>Dziękujemy za zakupy w naszym sklepie. Twoje zamówienie #{{ order.id }} zostało opłacone.</p>
                 <div class="confirmation-actions">
-                    <a href="{{ url_for('order_details', order_id=order.id) }}" class="btn btn-primary">Szczegóły zamówienia</a>
+                    <a href="{{ url_for('order_confirmation', order_id=order.id) }}" class="btn btn-primary">Szczegóły zamówienia</a>
                     <a href="{{ url_for('index') }}" class="btn btn-secondary">Kontynuuj zakupy</a>
                 </div>
             </div>

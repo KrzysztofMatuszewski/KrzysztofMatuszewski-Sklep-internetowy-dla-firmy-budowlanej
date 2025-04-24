@@ -79,7 +79,7 @@
                             </td>
                             <td>{{ order.total_price }} zł</td>
                             <td>
-                                <a href="{{ url_for('order_confirmation', order_id=order.id) }}" class="btn btn-sm">Szczegóły</a>
+                                <a href="{{ url_for('order_details', order_id=order.id) }}" class="btn btn-sm">Szczegóły</a>
                             </td>
                         </tr>
                         {% endfor %}

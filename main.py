@@ -1176,7 +1176,7 @@ def process_payment(order_id):
     
     # Dla metody POST przetwórz płatność
     # Symulacja płatności - 4 na 5 przypadków to sukces
-    payment_successful = random.choice([True, False])   # Zmienione na True, żeby zawsze się udawało (można zmienić na losowe)
+    payment_successful = random.choice([True, False])
     
     if payment_successful:
         # Płatność udana - zmień status zamówienia na completed

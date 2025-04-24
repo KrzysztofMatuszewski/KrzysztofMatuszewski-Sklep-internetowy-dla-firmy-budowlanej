@@ -1520,6 +1520,48 @@ def user_panel():
                           user=user, 
                           recent_orders=recent_orders_list)
 
+@app.route('/order_details/<int:order_id>')
+@login_required
+def order_details(order_id):
+    """View detailed information about a specific order"""
+    # Get the order
+    order = Order.query.get_or_404(order_id)
+    
+    # Check if the order belongs to the current user (unless admin)
+    if order.userId != current_user.id and current_user.roleId != 1:
+        flash('Nie masz dostępu do tego zamówienia')
+        return redirect(url_for('user_orders'))
+    
+    # Get order items
+    order_items = OrderItem.query.filter_by(orderId=order.id).all()
+    
+    # Prepare order items list with product details
+    order_products = []
+    for item in order_items:
+        product = Product.query.get(item.productId)
+        if product:
+            product_dict = {
+                'id': product.id,
+                'name': product.name,
+                'price': float(item.sellPrice),
+                'quantity': item.quantity,
+                'total_price': float(item.totalSellPrice),
+                'image_url': '/static/img/products/placeholder.jpg',
+            }
+            order_products.append(product_dict)
+    
+    # Calculate order values
+    order_total = float(order.totalPrice)
+    shipping_cost = 15 if order_total < 200 and order_total > 0 else 0
+    total_with_shipping = order_total + shipping_cost
+    
+    return render_template('order_details.html', 
+                          order=order, 
+                          order_products=order_products, 
+                          order_total=order_total,
+                          shipping_cost=shipping_cost,
+                          total_with_shipping=total_with_shipping)
+
 @app.route('/user_panel/profile')
 @login_required
 def user_profile():

@@ -1,0 +1,232 @@
+/* product-cards.css */
+
+.product-card {
+    border: 1px solid var(--medium-gray);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.product-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-5px);
+}
+
+.product-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #e74c3c;
+    color: white;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    z-index: 1;
+}
+
+.product-badge.new {
+    background-color: #3498db;
+}
+
+.product-badge.bestseller {
+    background-color: #2ecc71;
+}
+
+.product-image {
+    display: block;
+    height: 220px;
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
+.product-info {
+    padding: 15px;
+}
+
+.product-info h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    height: 45px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.product-rating i {
+    color: var(--primary-color);
+    font-size: 14px;
+    margin-right: 2px;
+}
+
+.product-rating span {
+    font-size: 12px;
+    color: var(--secondary-color);
+    margin-left: 5px;
+}
+
+.product-price {
+    margin-bottom: 15px;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: var(--secondary-color);
+    font-size: 14px;
+    margin-right: 5px;
+}
+
+.current-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dark-color);
+}
+
+.product-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Category cards */
+.category-card {
+    border: 1px solid var(--medium-gray);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.category-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-5px);
+}
+
+.category-image {
+    height: 180px;
+    overflow: hidden;
+}
+
+.category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.category-card:hover .category-image img {
+    transform: scale(1.05);
+}
+
+.category-card h3 {
+    padding: 15px;
+    font-size: 18px;
+    color: var(--dark-color);
+    text-align: center;
+    margin: 0;
+}
+
+.category-card p {
+    padding: 0 15px 15px;
+    color: var(--secondary-color);
+    text-align: center;
+}
+
+.category-link {
+    display: block;
+    text-align: center;
+    padding: 10px 15px;
+    background-color: var(--light-gray);
+    color: var(--dark-color);
+    font-weight: 600;
+    border-top: 1px solid var(--medium-gray);
+    transition: all 0.3s ease;
+}
+
+.category-link:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Benefit cards */
+.benefit-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.benefit-card:hover {
+    transform: translateY(-5px);
+}
+
+.benefit-icon {
+    width: 70px;
+    height: 70px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+}
+
+.benefit-card h3 {
+    margin-bottom: 10px;
+    color: var(--dark-color);
+}
+
+/* Brand cards */
+.brand-card {
+    border: 1px solid var(--medium-gray);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.brand-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-5px);
+}
+
+.brand-logo {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.brand-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.brand-card h3 {
+    font-size: 18px;
+    color: var(--dark-color);
+    margin-bottom: 5px;
+}
+
+.brand-card p {
+    color: var(--secondary-color);
+}

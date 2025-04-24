@@ -1,0 +1,108 @@
+/* layout.css */
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-header h2 {
+    font-size: 36px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.section-header p {
+    font-size: 18px;
+    color: var(--primary-color);
+}
+
+/* Grid layouts */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.subcategories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.brands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 30px;
+}
+
+/* Two-column layout for category page */
+.category-content {
+    display: flex;
+    gap: 30px;
+}
+
+.sidebar {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+.products-container {
+    flex-grow: 1;
+}
+
+/* Hero section layout */
+.hero {
+    height: 100vh;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../img/hero-bg.jpg') no-repeat center center/cover;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-top: 80px;
+}
+
+.hero-content {
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.hero-content h2 {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    font-size: 20px;
+}
+
+/* Breadcrumb layout */
+.breadcrumb {
+    padding: 120px 0 20px;
+    background-color: var(--light-gray);
+}
+
+.breadcrumb ul {
+    display: flex;
+    flex-wrap: wrap;
+}

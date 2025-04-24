@@ -1,0 +1,159 @@
+/* notifications.css */
+
+/* Notifications container */
+#notifications-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    background-color: white;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 280px;
+    max-width: 400px;
+    animation: notification-appear 0.3s ease;
+}
+
+.notification.hiding {
+    animation: notification-disappear 0.3s ease forwards;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification-icon {
+    font-size: 20px;
+}
+
+.notification.success .notification-icon {
+    color: var(--success-color);
+}
+
+.notification.warning .notification-icon {
+    color: var(--warning-color);
+}
+
+.notification.error .notification-icon {
+    color: var(--danger-color);
+}
+
+.notification.info .notification-icon {
+    color: var(--info-color);
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: #7f8c8d;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* User panel notifications */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    min-width: 300px;
+    max-width: 400px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    animation: slideIn 0.3s ease;
+}
+
+.notification.success {
+    border-left: 4px solid var(--success-color);
+}
+
+.notification.error {
+    border-left: 4px solid var(--danger-color);
+}
+
+.notification i:first-child {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+.notification.success i:first-child {
+    color: var(--success-color);
+}
+
+.notification.error i:first-child {
+    color: var(--danger-color);
+}
+
+.notification span {
+    flex-grow: 1;
+}
+
+.notification .close-notification {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #777;
+    padding: 5px;
+}
+
+.notification.hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+/* Animation keyframes */
+@keyframes notification-appear {
+    0% {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes notification-disappear {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

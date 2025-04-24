@@ -199,3 +199,5 @@ DROP COLUMN helpful_no;
 --@block
 SELECT * from reviews;
 
+--@block
+UPDATE users SET roleId = 1 WHERE id = 4;

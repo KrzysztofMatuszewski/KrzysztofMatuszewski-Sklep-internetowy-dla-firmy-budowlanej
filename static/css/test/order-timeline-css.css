@@ -1,0 +1,50 @@
+/* order-timeline.css */
+
+.order-timeline {
+    margin-top: 20px;
+}
+
+.timeline-item {
+    display: flex;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--medium-gray);
+    margin-right: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-item.active .timeline-marker {
+    background-color: var(--primary-color);
+}
+
+.timeline-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    width: 2px;
+    background-color: var(--medium-gray);
+    top: 20px;
+    bottom: -20px;
+    left: 9px;
+}
+
+.timeline-item.active:not(:last-child)::after {
+    background-color: var(--primary-color);
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-date {
+    font-size: 12px;
+    color: var(--secondary-color);
+    display: block;
+    margin-bottom: 5px;
+}

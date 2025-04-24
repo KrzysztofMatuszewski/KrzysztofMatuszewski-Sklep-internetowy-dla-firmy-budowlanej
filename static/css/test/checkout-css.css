@@ -1,0 +1,365 @@
+/* checkout.css */
+
+.checkout-page {
+    padding: 50px 0;
+}
+
+.checkout-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+/* Checkout form */
+.checkout-form {
+    flex: 1;
+    min-width: 320px;
+}
+
+.checkout-form h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: var(--dark-color);
+}
+
+.checkout-form h3 {
+    font-size: 20px;
+    margin: 30px 0 15px;
+    color: var(--dark-color);
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+/* Checkout summary */
+.checkout-summary {
+    flex: 0 0 350px;
+}
+
+.checkout-cart {
+    background-color: var(--light-gray);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.checkout-cart h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: var(--dark-color);
+}
+
+.cart-items {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.checkout-cart .cart-item {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--medium-gray);
+}
+
+.checkout-cart .cart-item-image {
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 15px;
+}
+
+.checkout-cart .cart-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.checkout-cart .cart-item-details {
+    flex: 1;
+}
+
+.checkout-cart .cart-item-details h3 {
+    font-size: 16px;
+    margin: 0 0 5px;
+}
+
+.checkout-cart .cart-item-quantity {
+    font-size: 14px;
+    color: var(--secondary-color);
+    margin-bottom: 5px;
+}
+
+.checkout-cart .cart-item-price {
+    font-weight: 600;
+}
+
+.checkout-totals {
+    padding-top: 15px;
+    border-top: 2px solid var(--medium-gray);
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.total-sum {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 10px;
+    color: var(--dark-color);
+}
+
+/* Payment Page Styles */
+.payment-page {
+    padding-top: 30px;
+    min-height: 60vh;
+}
+
+.payment-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 30px;
+    margin-top: 30px;
+}
+
+.payment-details {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.payment-details h2 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--light-gray);
+    font-size: 24px;
+    color: var(--dark-color);
+}
+
+.payment-summary {
+    background-color: var(--light-gray);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.payment-method {
+    margin: 30px 0;
+}
+
+.payment-method h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: var(--dark-color);
+}
+
+.method-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--light-gray);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.method-icon i {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+.method-icon span {
+    font-weight: 600;
+}
+
+.payment-form {
+    margin-top: 30px;
+}
+
+.payment-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+/* Confirmation and order details */
+.confirmation-page,
+.order-details-page {
+    padding: 50px 0;
+}
+
+.confirmation-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.confirmation-icon {
+    font-size: 64px;
+    color: var(--success-color);
+    margin-bottom: 20px;
+}
+
+.confirmation-header h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.confirmation-content,
+.order-details-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 30px;
+}
+
+.confirmation-summary,
+.orders-content {
+    margin-top: 30px;
+}
+
+/* Order products table */
+.order-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+.order-table th,
+.order-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--medium-gray);
+}
+
+.order-table th {
+    font-weight: 600;
+    background-color: var(--light-gray);
+}
+
+.order-product {
+    display: flex;
+    align-items: center;
+}
+
+.order-product-image {
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 15px;
+}
+
+.order-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.order-sum-label {
+    text-align: right;
+    font-weight: 600;
+}
+
+.order-sum-value {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+/* Order information boxes */
+.order-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.order-info-box {
+    background-color: var(--light-gray);
+    padding: 20px;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 250px;
+}
+
+.order-info-box h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: var(--dark-color);
+}
+
+.confirmation-actions,
+.order-details-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 30px;
+    justify-content: center;
+}
+
+/* Bank details for transfer */
+.bank-details {
+    background-color: white;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 15px;
+}
+
+.bank-details p {
+    margin: 5px 0;
+}
+
+/* Payment success page */
+.payment-confirmation {
+    padding: 60px 0;
+    min-height: 60vh;
+}
+
+.payment-success {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 40px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.payment-icon {
+    font-size: 64px;
+    color: var(--success-color);
+    margin-bottom: 20px;
+}
+
+.payment-success h1 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: var(--dark-color);
+}
+
+.payment-success p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    color: var(--secondary-color);
+}
+
+@media (max-width: 768px) {
+    .checkout-content {
+        flex-direction: column-reverse;
+    }
+    
+    .checkout-summary,
+    .checkout-form {
+        flex: 0 0 100%;
+    }
+}

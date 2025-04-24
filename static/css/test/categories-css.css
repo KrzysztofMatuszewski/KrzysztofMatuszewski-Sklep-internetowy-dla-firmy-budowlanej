@@ -1,0 +1,182 @@
+/* categories.css */
+
+.categories-page {
+    padding-top: 30px;
+}
+
+.parent-category {
+    margin-bottom: 60px;
+}
+
+.parent-category-header {
+    margin-bottom: 30px;
+}
+
+.parent-category-header h2 {
+    font-size: 28px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+/* Category page with sidebar */
+.category-page {
+    padding-top: 30px;
+}
+
+.category-header {
+    margin-bottom: 30px;
+}
+
+.category-header h1 {
+    font-size: 32px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+/* Category filters */
+.category-filters {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 30px;
+    gap: 20px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+}
+
+.filter-group label {
+    margin-right: 10px;
+}
+
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+}
+
+/* Sidebar filters */
+.sidebar-box {
+    background-color: var(--light-gray);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.sidebar-box h3 {
+    margin-bottom: 20px;
+    color: var(--dark-color);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--medium-gray);
+}
+
+.sidebar-filter {
+    margin-bottom: 20px;
+}
+
+.sidebar-filter h4 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: var(--dark-color);
+}
+
+.price-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.price-filter input {
+    width: 80px;
+    padding: 8px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+}
+
+.filter-button {
+    padding: 8px 12px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.checkbox-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+}
+
+.filter-item input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.stars-filter .filter-item label i {
+    color: var(--primary-color);
+}
+
+.filter-apply-btn {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.filter-clear-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: transparent;
+    color: var(--dark-color);
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-clear-btn:hover {
+    background-color: var(--light-gray);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px;
+    gap: 10px;
+}
+
+.pagination-ellipsis {
+    font-weight: bold;
+}
+
+@media (max-width: 992px) {
+    .category-content {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .category-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .filter-group select {
+        width: 70%;
+    }
+}

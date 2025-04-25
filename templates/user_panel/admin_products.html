@@ -73,12 +73,16 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="sellPrice">Cena sprzedaży</label>
-                    <input type="number" id="sellPrice" name="sellPrice" step="0.01" required>
+                    <input type="number" id="sellPrice" name="sellPrice" step="0.01" min="0.01" required
+                           oninvalid="this.setCustomValidity('Cena sprzedaży musi być większa od 0')"
+                           oninput="this.setCustomValidity('')">
                 </div>
                 
                 <div class="form-group">
                     <label for="buyPrice">Cena zakupu</label>
-                    <input type="number" id="buyPrice" name="buyPrice" step="0.01" required>
+                    <input type="number" id="buyPrice" name="buyPrice" step="0.01" min="0.01" required
+                           oninvalid="this.setCustomValidity('Cena zakupu musi być większa od 0')"
+                           oninput="this.setCustomValidity('')">
                 </div>
             </div>
             
@@ -94,7 +98,9 @@
                 
                 <div class="form-group">
                     <label for="stock">Stan magazynowy</label>
-                    <input type="number" id="stock" name="stock" required>
+                    <input type="number" id="stock" name="stock" min="0" required
+                           oninvalid="this.setCustomValidity('Stan magazynowy nie może być mniejszy od 0')"
+                           oninput="this.setCustomValidity('')">
                 </div>
             </div>
             
@@ -126,12 +132,16 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="edit_sellPrice">Cena sprzedaży</label>
-                    <input type="number" id="edit_sellPrice" name="sellPrice" step="0.01" required>
+                    <input type="number" id="edit_sellPrice" name="sellPrice" step="0.01" min="0.01" required
+                           oninvalid="this.setCustomValidity('Cena sprzedaży musi być większa od 0')"
+                           oninput="this.setCustomValidity('')">
                 </div>
                 
                 <div class="form-group">
                     <label for="edit_buyPrice">Cena zakupu</label>
-                    <input type="number" id="edit_buyPrice" name="buyPrice" step="0.01" required>
+                    <input type="number" id="edit_buyPrice" name="buyPrice" step="0.01" min="0.01" required
+                           oninvalid="this.setCustomValidity('Cena zakupu musi być większa od 0')"
+                           oninput="this.setCustomValidity('')">
                 </div>
             </div>
             
@@ -147,7 +157,9 @@
                 
                 <div class="form-group">
                     <label for="edit_stock">Stan magazynowy</label>
-                    <input type="number" id="edit_stock" name="stock" required>
+                    <input type="number" id="edit_stock" name="stock" min="0" required
+                           oninvalid="this.setCustomValidity('Stan magazynowy nie może być mniejszy od 0')"
+                           oninput="this.setCustomValidity('')">
                 </div>
             </div>
             

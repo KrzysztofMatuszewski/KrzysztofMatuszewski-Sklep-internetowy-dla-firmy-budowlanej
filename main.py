@@ -13,7 +13,7 @@ import json
 # Inicjalizacja aplikacji
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'twoj_tajny_klucz'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/patobud'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:rootroot@localhost/patobud'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicjalizacja bazy danych
@@ -1975,6 +1975,8 @@ def admin_add_product():
     if not all([name, description, sellPrice, buyPrice, categoryId, stock]):
         flash('Wszystkie pola są wymagane.')
         return redirect(url_for('admin_products'))
+
+
     
     try:
         new_product = Product(
@@ -2081,7 +2083,7 @@ def admin_edit_user_role(user_id):
 def admin_edit_product(product_id):
     """Edycja produktu"""
     product = Product.query.get_or_404(product_id)
-    
+
     # Pobierz dane z formularza
     name = request.form.get('name')
     description = request.form.get('description')
@@ -2089,12 +2091,12 @@ def admin_edit_product(product_id):
     buyPrice = request.form.get('buyPrice')
     categoryId = request.form.get('categoryId')
     stock = request.form.get('stock')
-    
+
     # Walidacja danych
     if not all([name, description, sellPrice, buyPrice, categoryId, stock]):
         flash('Wszystkie pola są wymagane.')
         return redirect(url_for('admin_products'))
-    
+
     try:
         # Aktualizuj dane produktu
         product.name = name
@@ -2103,16 +2105,15 @@ def admin_edit_product(product_id):
         product.buyPrice = float(buyPrice)
         product.categoryId = int(categoryId)
         product.stock = int(stock)
-        
+
         db.session.commit()
-        
+
         flash('Produkt został zaktualizowany pomyślnie.')
     except Exception as e:
         db.session.rollback()
         flash(f'Błąd podczas aktualizacji produktu: {str(e)}')
-    
-    return redirect(url_for('admin_products'))
 
+    return redirect(url_for('admin_products'))
 # Dodaj ten route do main.py
 
 @app.route('/user_panel/admin/user_orders/<int:user_id>')

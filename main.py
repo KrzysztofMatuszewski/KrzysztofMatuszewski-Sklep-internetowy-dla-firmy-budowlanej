@@ -13,7 +13,7 @@ import json
 # Inicjalizacja aplikacji
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'twoj_tajny_klucz'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:rootroot@localhost/patobud'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/patobud'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicjalizacja bazy danych
@@ -57,10 +57,12 @@ class Product(db.Model):
     buyPrice = db.Column(db.Numeric(10, 2), nullable=False)
     categoryId = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     stock = db.Column(db.Integer, nullable=False, default=0)
+    lastMovement = db.Column(db.DateTime, default=None)
     orderItems = db.relationship('OrderItem', backref='product', lazy=True)
     reviews = db.relationship('Review', backref='product', lazy=True)
     images = db.relationship('ProductImage', backref='product', lazy=True)
     files = db.relationship('ProductFile', backref='product', lazy=True)
+
 
 class Order(db.Model):
     __tablename__ = 'orders'
@@ -513,19 +515,24 @@ def categories():
     parent_categories = get_all_categories()
     return render_template('categories.html', parent_categories=parent_categories)
 
-@app.route('/category/<int:category_id>')
-def category(category_id):
-    category = get_category_details(category_id)
-    if not category:
+@app.route('/category/<int:category_id>', endpoint='category')
+def category_view(category_id):
+    category_data = get_category_details(category_id)
+    if not category_data:
         return "Kategoria nie znaleziona", 404
-    
-    # Pobierz stronę z parametrów URL
+
     page = request.args.get('page', 1, type=int)
-    
-    # Pobierz produkty z paginacją
     products, pagination = get_category_products(category_id, page)
-    
-    return render_template('category.html', category=category, products=products, pagination=pagination)
+
+    return render_template(
+        'category.html',
+        category=category_data,  # przekazujemy pod nazwą 'category', by szablon działał bez zmian
+        products=products,
+        pagination=pagination
+    )
+
+
+
 
 @app.route('/product/<int:product_id>')
 def product(product_id):
@@ -1802,7 +1809,12 @@ def admin_reports():
     """Generowanie raportów"""
     report_type = request.args.get('type')
     
-    # Jeśli wybrano raport sprzedaży
+    # Jeśli nie wybrano typu raportu, wyświetl stronę wyboru raportów
+    if not report_type:
+        # Przekazujemy tylko minimalny zestaw parametrów, by uniknąć błędów
+        return render_template('user_panel/admin_reports.html')
+    
+    # Raport sprzedaży
     if report_type == 'sales':
         # Ustal domyślne parametry
         today = datetime.now()
@@ -1815,8 +1827,8 @@ def admin_reports():
         start_date = request.args.get('start_date', default_start_date)
         end_date = request.args.get('end_date', default_end_date)
         
-        # Konwertuj daty na obiekty datetime
         try:
+            # Konwertuj daty na obiekty datetime
             start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
             end_datetime = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1) - timedelta(seconds=1)  # Koniec dnia
         except ValueError:
@@ -1957,8 +1969,91 @@ def admin_reports():
             report_type=report_type
         )
     
-    # Domyślny widok - strona wyboru raportu
-    return render_template('user_panel/admin_reports.html')
+        # Raport inwentaryzacyjny
+    elif report_type == 'inventory':
+        category = request.args.get('category', 'all')
+        availability = request.args.get('availability', 'all')
+        sort_by = request.args.get('sort_by', 'name')
+        
+        # Najpierw pobierz wszystkie kategorie, aby wypełnić listę rozwijaną
+        categories = db.session.query(Category.name).distinct().all()
+        category_list = [cat[0] for cat in categories if cat[0] is not None]
+
+        query = db.session.query(
+            Product.id,
+            Product.name,
+            Product.stock,
+            Product.sellPrice,
+            Product.buyPrice,
+            Product.lastMovement,
+            Category.name.label('category_name')
+        ).outerjoin(Category)
+        
+        if category != 'all':
+            query = query.filter(Category.name == category)
+        
+        products = query.all()
+        
+        report_entries = []
+        total_quantity = 0
+        total_value = 0
+        availability_counts = {'dostępny': 0, 'niski stan': 0, 'wyczerpany': 0}
+        
+        for p in products:
+            if p.stock > 10:
+                status = 'dostępny'
+            elif 0 < p.stock <= 10:
+                status = 'niski stan'
+            else:
+                status = 'wyczerpany'
+            
+            if availability != 'all' and availability != status:
+                continue
+            
+            value = p.stock * float(p.buyPrice)
+            total_quantity += p.stock
+            total_value += value
+            availability_counts[status] += 1
+            
+            report_entries.append({
+                'id': p.id,
+                'name': p.name,
+                'category': p.category_name or 'Brak',
+                'quantity': p.stock,
+                'last_movement': p.lastMovement.strftime('%d.%m.%Y') if p.lastMovement else 'Brak',
+                'status': status,
+                'value': value
+            })
+
+        num_products = len(report_entries)
+        avg_product_value = total_value / num_products if num_products > 0 else 0
+        
+        if sort_by == 'quantity':
+            report_entries.sort(key=lambda x: x['quantity'], reverse=True)
+        elif sort_by == 'value':
+            report_entries.sort(key=lambda x: x['value'], reverse=True)
+        else:
+            report_entries.sort(key=lambda x: x['name'].lower())
+        
+        return render_template(
+            'user_panel/admin_inventory_report.html',
+            report_entries=report_entries,
+            total_quantity=total_quantity,
+            total_value=total_value,
+            avg_product_value=avg_product_value,
+            availability_counts=availability_counts,
+            category=category,
+            availability=availability,
+            sort_by=sort_by,
+            report_type=report_type,
+            categories=category_list,  # Dodana lista kategorii
+            now=datetime.now()
+        )
+    
+    # Jeśli wybrano nieobsługiwany typ raportu
+    else:
+        flash(f"Nieznany typ raportu: {report_type}")
+        return render_template('user_panel/admin_reports.html')
 
 @app.route('/user_panel/admin/add_product', methods=['POST'])
 @admin_required

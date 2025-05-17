@@ -1,4 +1,3 @@
-<!-- templates/user_panel/admin_reports.html -->
 {% extends 'user_panel/base.html' %}
 
 {% block title %}Raporty - Panel administratora - BudowMax{% endblock %}
@@ -24,10 +23,22 @@
                 <div class="card-icon"><i class="fas fa-boxes"></i></div>
                 <h4>Raport stanów magazynowych</h4>
                 <p>Sprawdź stany magazynowe produktów</p>
-                <button class="btn btn-sm btn-block">Generuj</button>
+                <a href="{{ url_for('admin_reports', type='inventory') }}" class="btn btn-sm btn-block">Generuj</a>
             </div>
             
+            <!-- <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-users"></i></div>
+                <h4>Raport użytkowników</h4>
+                <p>Analiza aktywności użytkowników</p>
+                <a href="{{ url_for('admin_reports', type='users') }}" class="btn btn-sm btn-block">Generuj</a>
+            </div>
             
+            <div class="quick-link-card">
+                <div class="card-icon"><i class="fas fa-star"></i></div>
+                <h4>Raport popularności</h4>
+                <p>Najpopularniejsze produkty</p>
+                <a href="{{ url_for('admin_reports', type='popularity') }}" class="btn btn-sm btn-block">Generuj</a>
+            </div> -->
         </div>
     </div>
 </div>

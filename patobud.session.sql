@@ -201,3 +201,35 @@ SELECT * from reviews;
 
 --@block
 UPDATE users SET roleId = 1 WHERE id = 4;
+
+-- -- @block
+-- -- Użytkownicy (hasło 'password123' zahashowane)
+-- INSERT INTO users (username, email, password, roleId, isverified) 
+-- VALUES
+-- ('wik', 'wik@patobud.pl', 'wik123', 1, 1);
+
+-- --@block
+-- SELECT * from users;
+
+-- --@block
+-- DELETE FROM users WHERE username = 'wik';
+
+-- --@block
+-- UPDATE users SET roleId = 1 WHERE id = 4;
+
+-- --@block
+-- UPDATE users SET isverified = 1 WHERE id = 4;
+
+--@block
+ALTER TABLE products
+ADD COLUMN lastMovement DATETIME DEFAULT NULL;
+
+--@block
+UPDATE products p
+LEFT JOIN (
+    SELECT oi.productId, MAX(o.createdAt) AS last_movement
+    FROM orderItems oi
+    JOIN orders o ON oi.orderId = o.id
+    GROUP BY oi.productId
+) AS lm ON p.id = lm.productId
+SET p.lastMovement = lm.last_movement;

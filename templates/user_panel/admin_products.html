@@ -73,16 +73,22 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="sellPrice">Cena sprzedaży</label>
-                    <input type="number" id="sellPrice" name="sellPrice" step="0.01" min="0.01" required
+                    <input type="number" id="sellPrice" name="sellPrice" step="0.01" min="0.01" required 
+                           oninput="validateNumberInput(this, 0.01, 2)" 
+                           onkeydown="preventNegative(event)" 
+                           onpaste="validatePaste(event, 0.01)"
                            oninvalid="this.setCustomValidity('Cena sprzedaży musi być większa od 0')"
-                           oninput="this.setCustomValidity('')">
+                           onchange="this.setCustomValidity('')">
                 </div>
                 
                 <div class="form-group">
                     <label for="buyPrice">Cena zakupu</label>
-                    <input type="number" id="buyPrice" name="buyPrice" step="0.01" min="0.01" required
+                    <input type="number" id="buyPrice" name="buyPrice" step="0.01" min="0.01" required 
+                           oninput="validateNumberInput(this, 0.01, 2)" 
+                           onkeydown="preventNegative(event)" 
+                           onpaste="validatePaste(event, 0.01)"
                            oninvalid="this.setCustomValidity('Cena zakupu musi być większa od 0')"
-                           oninput="this.setCustomValidity('')">
+                           onchange="this.setCustomValidity('')">
                 </div>
             </div>
             
@@ -98,9 +104,12 @@
                 
                 <div class="form-group">
                     <label for="stock">Stan magazynowy</label>
-                    <input type="number" id="stock" name="stock" min="0" required
+                    <input type="number" id="stock" name="stock" min="0" step="1" required 
+                           oninput="validateIntegerInput(this, 0)" 
+                           onkeydown="preventNegative(event)" 
+                           onpaste="validatePaste(event, 0)"
                            oninvalid="this.setCustomValidity('Stan magazynowy nie może być mniejszy od 0')"
-                           oninput="this.setCustomValidity('')">
+                           onchange="this.setCustomValidity('')">
                 </div>
             </div>
             
@@ -132,16 +141,22 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="edit_sellPrice">Cena sprzedaży</label>
-                    <input type="number" id="edit_sellPrice" name="sellPrice" step="0.01" min="0.01" required
+                    <input type="number" id="edit_sellPrice" name="sellPrice" step="0.01" min="0.01" required 
+                           oninput="validateNumberInput(this, 0.01, 2)" 
+                           onkeydown="preventNegative(event)" 
+                           onpaste="validatePaste(event, 0.01)"
                            oninvalid="this.setCustomValidity('Cena sprzedaży musi być większa od 0')"
-                           oninput="this.setCustomValidity('')">
+                           onchange="this.setCustomValidity('')">
                 </div>
                 
                 <div class="form-group">
                     <label for="edit_buyPrice">Cena zakupu</label>
-                    <input type="number" id="edit_buyPrice" name="buyPrice" step="0.01" min="0.01" required
+                    <input type="number" id="edit_buyPrice" name="buyPrice" step="0.01" min="0.01" required 
+                           oninput="validateNumberInput(this, 0.01, 2)" 
+                           onkeydown="preventNegative(event)" 
+                           onpaste="validatePaste(event, 0.01)"
                            oninvalid="this.setCustomValidity('Cena zakupu musi być większa od 0')"
-                           oninput="this.setCustomValidity('')">
+                           onchange="this.setCustomValidity('')">
                 </div>
             </div>
             
@@ -157,9 +172,12 @@
                 
                 <div class="form-group">
                     <label for="edit_stock">Stan magazynowy</label>
-                    <input type="number" id="edit_stock" name="stock" min="0" required
+                    <input type="number" id="edit_stock" name="stock" min="0" step="1" required 
+                           oninput="validateIntegerInput(this, 0)" 
+                           onkeydown="preventNegative(event)" 
+                           onpaste="validatePaste(event, 0)"
                            oninvalid="this.setCustomValidity('Stan magazynowy nie może być mniejszy od 0')"
-                           oninput="this.setCustomValidity('')">
+                           onchange="this.setCustomValidity('')">
                 </div>
             </div>
             
@@ -181,6 +199,11 @@
 }
 .btn-danger:hover {
     background-color: #c0392b;
+}
+/* Styl dla pól z błędną wartością */
+input:invalid {
+    border-color: #e74c3c;
+    background-color: #fff8f8;
 }
 </style>
 
@@ -220,6 +243,67 @@ function hideEditProductModal() {
     const modal = document.getElementById('editProductModal');
     modal.style.opacity = '0';
     setTimeout(() => modal.style.display = 'none', 300);
+}
+
+// Funkcja do walidacji pól liczbowych z ograniczeniem miejsc po przecinku
+function validateNumberInput(input, minValue, decimalPlaces) {
+    // Blokuj wartości ujemne
+    if (input.value !== '' && parseFloat(input.value) < 0) {
+        input.value = '';
+        return;
+    }
+    
+    // Ograniczanie do określonej liczby miejsc po przecinku
+    if (input.value.includes('.')) {
+        const parts = input.value.split('.');
+        if (parts[1] && parts[1].length > decimalPlaces) {
+            // Obcinamy do określonej liczby miejsc po przecinku
+            input.value = parts[0] + '.' + parts[1].substr(0, decimalPlaces);
+        }
+    }
+}
+
+// Funkcja do walidacji liczb całkowitych nie mniejszych niż minValue
+function validateIntegerInput(input, minValue) {
+    // Jeśli pole jest puste, nie rób nic
+    if (input.value === '') return;
+    
+    // Blokuj wartości ujemne
+    if (parseFloat(input.value) < 0) {
+        input.value = '';
+        return;
+    }
+
+    // Konwertuj do liczby całkowitej i ustaw w polu
+    const value = Math.max(Math.floor(parseFloat(input.value)), minValue);
+    input.value = value;
+}
+
+// Funkcja blokująca wprowadzanie ujemnych wartości z klawiatury
+function preventNegative(event) {
+    // Zablokuj tylko wprowadzanie minusa na pierwszej pozycji
+    // Pozwól na używanie backspace, delete i innych klawiszy nawigacyjnych
+    const navigationKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+    
+    if (event.key === '-' && !event.ctrlKey && !event.metaKey) {
+        // Blokuj tylko znak minus
+        event.preventDefault();
+    } else if (navigationKeys.includes(event.key)) {
+        // Explicite pozwalamy na klawisze nawigacyjne
+        return;
+    }
+}
+
+// Funkcja walidująca dane wklejane do pola
+function validatePaste(event, minValue) {
+    // Pobierz dane ze schowka
+    const clipboardData = event.clipboardData || window.clipboardData;
+    const pastedData = clipboardData.getData('text');
+    
+    // Sprawdź, czy wklejane dane są liczbą większą lub równą minValue
+    if (pastedData !== '' && (isNaN(parseFloat(pastedData)) || parseFloat(pastedData) < minValue)) {
+        event.preventDefault();
+    }
 }
 
 // Zamknij modal po kliknięciu poza jego zawartością

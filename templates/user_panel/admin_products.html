@@ -299,7 +299,7 @@ function preventNegative(event) {
     }
     
     // Pozwalamy na wprowadzanie cyfr (0-9) i kropki
-    if (!/^[0-9.]$/.test(event.key) && !navigationKeys.includes(event.key) && !event.ctrlKey && !event.metaKey) {
+    if (!/^[0-9.,]$/.test(event.key) && !navigationKeys.includes(event.key) && !event.ctrlKey && !event.metaKey) {
         // Blokujemy wszystkie inne znaki (litery i symbole)
         event.preventDefault();
     }

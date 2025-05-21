@@ -281,16 +281,27 @@ function validateIntegerInput(input, minValue) {
 
 // Funkcja blokująca wprowadzanie ujemnych wartości z klawiatury
 function preventNegative(event) {
-    // Zablokuj tylko wprowadzanie minusa na pierwszej pozycji
-    // Pozwól na używanie backspace, delete i innych klawiszy nawigacyjnych
-    const navigationKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+    // Lista klawiszy do zablokowania w polach numerycznych
+    const blockedKeys = ['-', 'e', 'E', '+'];
     
-    if (event.key === '-' && !event.ctrlKey && !event.metaKey) {
-        // Blokuj tylko znak minus
+    // Lista dozwolonych klawiszy specjalnych
+    const navigationKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End'];
+    
+    // Blokuj niedozwolone znaki
+    if (blockedKeys.includes(event.key)) {
         event.preventDefault();
-    } else if (navigationKeys.includes(event.key)) {
-        // Explicite pozwalamy na klawisze nawigacyjne
         return;
+    }
+    
+    // Explicite pozwalamy na klawisze nawigacyjne
+    if (navigationKeys.includes(event.key)) {
+        return;
+    }
+    
+    // Pozwalamy na wprowadzanie cyfr (0-9) i kropki
+    if (!/^[0-9.]$/.test(event.key) && !navigationKeys.includes(event.key) && !event.ctrlKey && !event.metaKey) {
+        // Blokujemy wszystkie inne znaki (litery i symbole)
+        event.preventDefault();
     }
 }
 
@@ -300,7 +311,13 @@ function validatePaste(event, minValue) {
     const clipboardData = event.clipboardData || window.clipboardData;
     const pastedData = clipboardData.getData('text');
     
-    // Sprawdź, czy wklejane dane są liczbą większą lub równą minValue
+    // Dozwolone są tylko cyfry i pojedyncza kropka
+    if (!/^[0-9.]+$/.test(pastedData) || (pastedData.split('.').length > 2)) {
+        event.preventDefault();
+        return;
+    }
+    
+    // Sprawdź, czy wklejane dane nie są ujemne i czy są liczbą
     if (pastedData !== '' && (isNaN(parseFloat(pastedData)) || parseFloat(pastedData) < minValue)) {
         event.preventDefault();
     }

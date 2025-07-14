@@ -2456,6 +2456,15 @@ def get_featured_products(limit=8):
         
     return result
 
+@app.route('/about')
+def about():
+    """Strona O nas"""
+    return render_template('about.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
 if __name__ == '__main__':
     os.makedirs('static/img/products', exist_ok=True)
     os.makedirs('static/img/categories', exist_ok=True)

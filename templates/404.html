@@ -35,9 +35,9 @@
                 <ul>
                     <li><a href="{{ url_for('index') }}">Strona główna</a></li>
                     <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
-                    <li><a href="#">Promocje</a></li>
-                    <li><a href="#">O nas</a></li>
-                    <li><a href="#">Kontakt</a></li>
+                        <li><a href="{{url_for('bestsellers')}}">Bestsellery</a></li>
+                    <li><a href="{{ url_for('about') }}">O nas</a></li>
+                        <li><a href="{{url_for('contact')}}">Kontakt</a></li>
                 </ul>
             </nav>
             <div class="mobile-menu-btn">
@@ -77,9 +77,9 @@
                     <ul>
                         <li><a href="{{ url_for('index') }}">Strona główna</a></li>
                         <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
-                        <li><a href="#">Promocje</a></li>
-                        <li><a href="#">O nas</a></li>
-                        <li><a href="#">Kontakt</a></li>
+                        <li><a href="{{url_for('bestsellers')}}">Bestsellery</a></li>
+                    <li><a href="{{ url_for('about') }}">O nas</a></li>
+                        <li><a href="{{url_for('contact')}}">Kontakt</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">

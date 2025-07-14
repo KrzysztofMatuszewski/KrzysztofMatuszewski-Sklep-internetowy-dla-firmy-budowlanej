@@ -1,0 +1,490 @@
+<!-- templates/contact.html -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontakt - BudowMax</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/test/index-css.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Dodatkowe style specyficzne dla strony kontakt */
+        .contact-section {
+            background-color: #f8f9fa;
+            padding: 80px 0;
+        }
+        
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .contact-info {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .contact-info h2 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+        }
+        
+        .contact-item i {
+            color: #f39c12;
+            font-size: 20px;
+            margin-right: 15px;
+            margin-top: 5px;
+            min-width: 25px;
+        }
+        
+        .contact-item-content h3 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+        
+        .contact-item-content p {
+            color: #666;
+            margin: 0;
+            line-height: 1.6;
+        }
+        
+        .contact-form {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .contact-form h2 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #f39c12;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .submit-btn {
+            background: #f39c12;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        
+        .submit-btn:hover {
+            background: #e67e22;
+        }
+        
+        .map-section {
+            background: white;
+            padding: 60px 0;
+        }
+        
+        .map-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .map-placeholder {
+            background: #f0f0f0;
+            height: 400px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 18px;
+            border: 2px dashed #ddd;
+        }
+        
+        .business-hours {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .business-hours h3 {
+            margin-bottom: 15px;
+            color: #f39c12;
+        }
+        
+        .hours-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .hours-row:last-child {
+            border-bottom: none;
+        }
+        
+        /* Responsywność */
+        @media (max-width: 768px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .contact-info,
+            .contact-form {
+                padding: 30px 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .contact-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .contact-item i {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header z nawigacją -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>BudowMax</h1>
+                <p>Hurtownia sprzętu i materiałów budowlanych</p>
+            </div>
+            <div class="header-right">
+                <div class="header-search">
+                    <form>
+                        <input type="text" placeholder="Czego szukasz?">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="header-icons">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('user_panel') }}" class="icon-link"><i class="fas fa-user"></i> {{ current_user.username }}</a>
+                        <a href="{{ url_for('logout') }}" class="icon-link"><i class="fas fa-sign-out-alt"></i></a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="icon-link"><i class="fas fa-user"></i></a>
+                    {% endif %}
+                    <a href="{{ url_for('cart') }}" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                    <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
+                    <li><a href="{{ url_for('bestsellers') }}">Bestsellery</a></li>
+                        <li><a href="{{url_for('about')}}">O nas</a></li>
+                        <li><a href="{{url_for('contact')}}">Kontakt</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ścieżka -->
+    <section class="breadcrumb">
+        <div class="container">
+            <ul>
+                <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                <li><span>Kontakt</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Sekcja kontakt -->
+    <section class="contact-section">
+        <div class="contact-container">
+            <!-- Informacje kontaktowe -->
+            <div class="contact-info">
+                <h2>Dane kontaktowe</h2>
+                
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div class="contact-item-content">
+                        <h3>Adres</h3>
+                        <p>ul. Budowlana 123<br>
+                        00-001 Warszawa<br>
+                        Polska</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <div class="contact-item-content">
+                        <h3>Telefon</h3>
+                        <p>+48 22 123 45 67<br>
+                        +48 22 123 45 68 (fax)</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <div class="contact-item-content">
+                        <h3>Email</h3>
+                        <p>biuro@budowmax.pl<br>
+                        zamowienia@budowmax.pl</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <i class="fas fa-globe"></i>
+                    <div class="contact-item-content">
+                        <h3>Strona internetowa</h3>
+                        <p>www.budowmax.pl</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <i class="fas fa-id-card"></i>
+                    <div class="contact-item-content">
+                        <h3>Dane firmy</h3>
+                        <p>BudowMax Sp. z o.o.<br>
+                        NIP: 123-456-78-90<br>
+                        REGON: 123456789</p>
+                    </div>
+                </div>
+                
+                <!-- Godziny otwarcia -->
+                <div class="business-hours">
+                    <h3><i class="fas fa-clock"></i> Godziny otwarcia</h3>
+                    <div class="hours-row">
+                        <span>Poniedziałek - Piątek</span>
+                        <span>7:00 - 18:00</span>
+                    </div>
+                    <div class="hours-row">
+                        <span>Sobota</span>
+                        <span>8:00 - 14:00</span>
+                    </div>
+                    <div class="hours-row">
+                        <span>Niedziela</span>
+                        <span>Zamknięte</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formularz kontaktowy -->
+            <div class="contact-form">
+                <h2>Wyślij wiadomość</h2>
+                
+                <form id="contactForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Imię i nazwisko *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Telefon</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Firma</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject">Temat *</label>
+                        <select id="subject" name="subject" required>
+                            <option value="">Wybierz temat</option>
+                            <option value="general">Zapytanie ogólne</option>
+                            <option value="order">Zamówienie</option>
+                            <option value="complaint">Reklamacja</option>
+                            <option value="cooperation">Współpraca</option>
+                            <option value="other">Inne</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Wiadomość *</label>
+                        <textarea id="message" name="message" placeholder="Opisz szczegółowo swoją sprawę..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i> Wyślij wiadomość
+                    </button>
+                </form>
+                
+                <!-- Popup z potwierdzeniem -->
+                <div id="successPopup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; text-align: center; max-width: 400px;">
+                        <i class="fas fa-check-circle" style="font-size: 48px; color: #2ecc71; margin-bottom: 20px;"></i>
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">Wiadomość wysłana!</h3>
+                        <p style="color: #666; margin-bottom: 20px;">Dziękujemy za kontakt. Odpowiemy najszybciej jak to możliwe.</p>
+                        <button onclick="closePopup()" style="background: #f39c12; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <h3>BudowMax</h3>
+                    <p>Hurtownia sprzętu i materiałów budowlanych</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Przydatne linki</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Strona główna</a></li>
+                        <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
+                        <li><a href="{{ url_for('bestsellers') }}">Bestsellery</a></li>
+                        <li><a href="{{url_for('about')}}">O nas</a></li>
+                        <li><a href="{{ url_for('contact') }}">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Informacje</h4>
+                    <ul>
+                        <li><a href="#">Regulamin</a></li>
+                        <li><a href="#">Polityka prywatności</a></li>
+                        <li><a href="#">Dostawa i płatności</a></li>
+                        <li><a href="#">Reklamacje i zwroty</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Obserwuj nas</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="payment-methods">
+                        <h4>Metody płatności</h4>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BudowMax - Wszelkie prawa zastrzeżone.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Obsługa formularza kontaktowego - tylko symulacja
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Sprawdź czy wymagane pola są wypełnione
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+            
+            if (!name || !email || !subject || !message) {
+                alert('Proszę wypełnić wszystkie wymagane pola.');
+                return;
+            }
+            
+            // Pokaż popup z potwierdzeniem
+            document.getElementById('successPopup').style.display = 'block';
+            
+            // Wyczyść formularz
+            this.reset();
+        });
+        
+        function closePopup() {
+            document.getElementById('successPopup').style.display = 'none';
+        }
+        
+        // Zamknij popup po kliknięciu tła
+        document.getElementById('successPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePopup();
+            }
+        });
+    </script>
+</body>
+</html>

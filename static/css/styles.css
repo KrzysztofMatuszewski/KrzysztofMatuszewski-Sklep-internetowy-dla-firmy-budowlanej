@@ -2797,11 +2797,12 @@ nav ul li a.active::after {
 
 /* Sidebar */
 .user-panel-sidebar {
-    width: 250px;
+   width: 300px;
     background-color: #f9f9f9;
     border-right: 1px solid #eaeaea;
     padding-bottom: 20px;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .user-info {
@@ -2843,19 +2844,19 @@ nav ul li a.active::after {
 }
 
 .user-navigation a {
-    display: flex;
-    align-items: center;
+    display: block; /* Zmiana z flex na block */
     padding: 15px 20px;
     color: #555;
     text-decoration: none;
     border-left: 3px solid transparent;
-    transition: all 0.2s ease;
+    box-sizing: border-box; /* Ważne: uwzględnia padding w szerokości */
+    width: 100%;
+    white-space: nowrap; /* Zapobiega łamaniu tekstu */
+    overflow: hidden; /* Ukrywa wystający tekst */
+    text-overflow: ellipsis;
 }
 
-.user-navigation a:hover {
-    background-color: #f0f0f0;
-    color: #333;
-}
+
 
 .user-navigation li.active a {
     background-color: #f0f0f0;
@@ -2868,6 +2869,7 @@ nav ul li a.active::after {
     margin-right: 10px;
     width: 20px;
     text-align: center;
+    display: inline-block;
 }
 
 .logout-link {
@@ -4033,3 +4035,4 @@ nav ul li a.active::after {
 .orders-table tr.deleted-user .btn:not(.btn-sm) {
     display: none;
 }
+

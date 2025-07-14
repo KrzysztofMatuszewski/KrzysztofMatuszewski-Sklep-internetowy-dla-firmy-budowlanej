@@ -83,11 +83,7 @@
                             
                             {% if current_user.roleId == 1 %}
                                 <!-- Sekcja tylko dla administratora -->
-                                <li class="has-submenu {% if 'admin' in request.endpoint %}active{% endif %}">
-                                    <a href="#" onclick="toggleAdminMenu(event)">
-                                        <i class="fas fa-shield-alt"></i> Panel administratora
-                                        <i class="fas fa-chevron-down submenu-icon"></i>
-                                    </a>
+                                
                                     <ul class="admin-submenu" id="adminSubmenu">
                                         <li {% if request.endpoint == 'admin_products' %}class="active"{% endif %}>
                                             <a href="{{ url_for('admin_products') }}">

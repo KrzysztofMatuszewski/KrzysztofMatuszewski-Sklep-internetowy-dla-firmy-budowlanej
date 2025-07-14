@@ -40,8 +40,7 @@
                 <ul>
                     <li><a href="{{ url_for('index') }}" class="active">Strona główna</a></li>
                     <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
-                    <li><a href="#">Promocje</a></li>
-                    <li><a href="#">Bestsellery</a></li>
+                    <li><a href="{{ url_for('bestsellers') }}">Bestsellery</a></li>
                     <li><a href="#">O nas</a></li>
                     <li><a href="#">Kontakt</a></li>
                 </ul>
@@ -58,7 +57,7 @@
             <h2>Profesjonalne materiały budowlane</h2>
             <p>Wszystko czego potrzebujesz w jednym miejscu</p>
             <div class="cta-buttons">
-                <a href="#" class="btn btn-primary">Sprawdź promocje</a>
+                <a href="{{ url_for('bestsellers') }}" class="btn btn-primary">Sprawdź bestsellery</a>
                 <a href="{{ url_for('categories') }}" class="btn btn-secondary">Nasze kategorie</a>
             </div>
         </div>
@@ -234,8 +233,7 @@
                     <ul>
                         <li><a href="{{ url_for('index') }}">Strona główna</a></li>
                         <li><a href="{{ url_for('categories') }}">Kategorie</a></li>
-                        <li><a href="#">Promocje</a></li>
-                        <li><a href="#">Bestsellery</a></li>
+                    <li><a href="{{ url_for('bestsellers') }}">Bestsellery</a></li>
                         <li><a href="#">O nas</a></li>
                         <li><a href="#">Kontakt</a></li>
                     </ul>

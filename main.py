@@ -2305,6 +2305,157 @@ def admin_delete_user(user_id):
     
     return redirect(url_for('admin_users'))
 
+def get_product_total_sold(product_id):
+    """Oblicza całkowitą liczbę sprzedanych sztuk produktu"""
+    from sqlalchemy import func
+    
+    total_sold = db.session.query(
+        func.sum(OrderItem.quantity)
+    ).join(
+        Order, OrderItem.orderId == Order.id
+    ).filter(
+        OrderItem.productId == product_id,
+        Order.status.in_(['completed', 'pending', 'processing'])  # Różne statusy zamówień
+    ).scalar()
+    
+    return int(total_sold) if total_sold else 0
+
+def get_bestsellers(limit=3):
+    """Pobiera bestsellery - produkty najczęściej kupowane"""
+    from sqlalchemy import func
+    
+    # Zapytanie SQL do znalezienia produktów najczęściej kupowanych
+    bestsellers_query = db.session.query(
+        Product.id,
+        func.sum(OrderItem.quantity).label('total_sold')
+    ).join(
+        OrderItem, Product.id == OrderItem.productId
+    ).join(
+        Order, OrderItem.orderId == Order.id
+    ).filter(
+        Order.status.in_(['completed', 'pending', 'processing'])  # Uwzględnij różne statusy zamówień
+    ).group_by(
+        Product.id
+    ).order_by(
+        func.sum(OrderItem.quantity).desc()
+    ).limit(limit)
+    
+    bestsellers_data = bestsellers_query.all()
+    
+    # Jeśli mamy mniej bestsellerów niż limit, uzupełnij najpopularniejszymi produktami
+    if len(bestsellers_data) < limit:
+        # Pobierz produkty z najwyższą oceną jako uzupełnienie
+        existing_ids = [b[0] for b in bestsellers_data]
+        additional_query = Product.query.outerjoin(Review).group_by(Product.id)
+        
+        if existing_ids:
+            additional_query = additional_query.filter(~Product.id.in_(existing_ids))
+        
+        additional_products = additional_query.order_by(func.avg(Review.rating).desc()).limit(limit - len(bestsellers_data)).all()
+        
+        # Dodaj do listy bestsellerów z obliczeniem rzeczywistej sprzedaży
+        for product in additional_products:
+            actual_sold = get_product_total_sold(product.id)
+            bestsellers_data.append((product.id, actual_sold))
+    
+    result = []
+    for bestseller_data in bestsellers_data:
+        product_id = bestseller_data[0]
+        total_sold = bestseller_data[1] if bestseller_data[1] else 0
+        
+        product = Product.query.get(product_id)
+        
+        if product:
+            # Oblicz średnią ocenę produktu
+            avg_rating = db.session.query(func.avg(Review.rating)).filter(Review.productId == product.id).scalar() or 0
+            reviews_count = Review.query.filter_by(productId=product.id).count()
+            
+            # Pobierz pierwsze zdjęcie produktu
+            image = ProductImage.query.filter_by(productId=product.id).first()
+            image_url = '/static/img/products/placeholder.jpg'
+            
+            # Konstruowanie obiektu produktu
+            product_dict = {
+                'id': product.id,
+                'name': product.name,
+                'price': float(product.sellPrice),
+                'old_price': float(product.sellPrice) * 1.2,
+                'discount': 20 if product.id % 2 == 0 else 15,
+                'rating': round(float(avg_rating), 1),
+                'reviews_count': reviews_count,
+                'image_url': image_url,
+                'is_bestseller': True,  # Wszystkie produkty w tej funkcji to bestsellery
+                'is_new': product.id % 4 == 0,
+                'total_sold': int(total_sold),  # Rzeczywista liczba sprzedanych sztuk
+                'category': product.category.name if product.category else 'Bez kategorii'
+            }
+            
+            result.append(product_dict)
+    
+    return result
+
+# 2. Zmodyfikuj route dla strony bestsellerów z debugowaniem
+
+@app.route('/bestsellers')
+def bestsellers():
+    """Strona z bestsellerami"""
+    try:
+        bestsellers_products = get_bestsellers(3)  # Pobierz 3 najczęściej kupowane
+        
+        # Debug - wyświetl informacje w konsoli
+        print("=== DEBUG: Bestsellers ===")
+        for i, product in enumerate(bestsellers_products, 1):
+            print(f"{i}. {product['name']} - Sprzedane: {product['total_sold']}")
+        print("=" * 30)
+        
+        return render_template('bestsellers.html', 
+                             bestsellers=bestsellers_products,
+                             title="Bestsellery - Najczęściej kupowane produkty")
+    except Exception as e:
+        print(f"Błąd w funkcji bestsellers: {e}")
+        # W przypadku błędu, wyświetl pustą listę
+        return render_template('bestsellers.html', 
+                             bestsellers=[],
+                             title="Bestsellery - Najczęściej kupowane produkty")
+
+# 3. Zmodyfikuj funkcję get_featured_products aby używała prawdziwych bestsellerów
+
+def get_featured_products(limit=8):
+    """Pobiera wyróżnione produkty (promocje, bestsellery lub nowości)"""
+    products = Product.query.order_by(Product.id.desc()).limit(limit).all()
+    
+    # Pobierz prawdziwe bestsellery
+    real_bestsellers = get_bestsellers(3)
+    bestseller_ids = [b['id'] for b in real_bestsellers]
+    
+    result = []
+    for product in products:
+        # Oblicz średnią ocenę produktu
+        avg_rating = db.session.query(func.avg(Review.rating)).filter(Review.productId == product.id).scalar() or 0
+        reviews_count = Review.query.filter_by(productId=product.id).count()
+        
+        # Pobierz pierwsze zdjęcie produktu, jeśli istnieje
+        image = ProductImage.query.filter_by(productId=product.id).first()
+        image_url = '/static/img/products/placeholder.jpg'
+        
+        # Konstruowanie obiektu produktu
+        product_dict = {
+            'id': product.id,
+            'name': product.name,
+            'price': float(product.sellPrice),
+            'old_price': float(product.sellPrice) * 1.2,
+            'discount': 20 if product.id % 2 == 0 else 15,
+            'rating': round(float(avg_rating), 1),
+            'reviews_count': reviews_count,
+            'image_url': image_url,
+            'is_bestseller': product.id in bestseller_ids,  # Prawdziwe bestsellery
+            'is_new': product.id % 4 == 0
+        }
+        
+        result.append(product_dict)
+        
+    return result
+
 if __name__ == '__main__':
     os.makedirs('static/img/products', exist_ok=True)
     os.makedirs('static/img/categories', exist_ok=True)

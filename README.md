@@ -19,7 +19,7 @@ Aby uruchomić projekt lokalnie, upewnij się, że masz zainstalowane następuj�
 1. Sklonuj repozytorium:
 
    ```bash
-   git clone <adres_repozytorium>
+   git clone https://github.com/KrzysztofMatuszewski/KrzysztofMatuszewski-Sklep-internetowy-dla-firmy-budowlanej.git
    cd Sklep-internetowy-dla-firmy-budowlanej
    ```
 
